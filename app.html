@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>British ↔ American · 10 words, two readings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Charis+SIL:wght@400;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#0a0d13;
+    --stage:#111724;
+    --edge:#1f2937;
+    --chalk:#e9eef7;
+    --dim:#78849b;
+    --uk:#5aa2ff;
+    --us:#ff616e;
+    --uk-glow:rgba(90,162,255,.16);
+    --us-glow:rgba(255,97,110,.16);
+    --mono:'IBM Plex Mono',ui-monospace,Consolas,monospace;
+    --sans:'IBM Plex Sans',system-ui,'Segoe UI',sans-serif;
+    --display:'Bricolage Grotesque','IBM Plex Sans',system-ui,sans-serif;
+    --ipa:'Charis SIL','Gentium Plus','Doulos SIL','Lucida Sans Unicode','Segoe UI','Noto Sans','DejaVu Sans',serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--void);
+    color:var(--chalk);
+    font-family:var(--sans);
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+  }
+  #player{
+    width:100%;
+    max-width:1080px;
+    background:var(--stage);
+    border:1px solid var(--edge);
+    border-radius:14px;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+  }
+  #player:fullscreen{max-width:none;height:100vh;border-radius:0;border:0}
+  #player:fullscreen .stage{flex:1}
+
+  /* ── top bar ── */
+  .bar{
+    display:flex;align-items:center;gap:14px;
+    padding:11px 16px;
+    border-bottom:1px solid var(--edge);
+    font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);
+  }
+  .bar b{color:var(--uk);font-weight:500}
+  .bar i{color:var(--us);font-style:normal}
+  .bar .grow{flex:1}
+  .icon{
+    background:none;border:1px solid var(--edge);color:var(--dim);
+    border-radius:6px;width:28px;height:24px;cursor:pointer;font-size:11px;line-height:1;
+  }
+  .icon:hover{color:var(--chalk);border-color:#3b4761}
+
+  /* ── stage ── */
+  .stage{
+    position:relative;
+    padding:clamp(22px,4vw,44px) clamp(16px,4vw,44px);
+    min-height:clamp(360px,52vh,460px);
+    display:flex;flex-direction:column;justify-content:center;
+  }
+  .card{display:none;animation:in .5s ease both}
+  .card.live{display:block}
+  @keyframes in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+  /* ── opening card ── */
+  .kicker{font-family:var(--mono);font-size:11px;letter-spacing:.24em;color:var(--dim);text-transform:uppercase;margin-bottom:16px}
+  .title{font-family:var(--display);font-size:clamp(34px,5.6vw,62px);font-weight:700;line-height:1.05;letter-spacing:-.02em}
+  .title .b{color:var(--uk)}
+  .title .a{color:var(--us)}
+  .lede{color:var(--dim);margin-top:14px;font-size:15px;max-width:48ch;line-height:1.65}
+  .lede strong{color:var(--chalk);font-weight:500}
+  .cta{
+    margin-top:26px;background:var(--chalk);color:#0a0d13;border:0;
+    font-family:var(--sans);font-weight:600;font-size:15px;
+    padding:12px 26px;border-radius:999px;cursor:pointer;
+  }
+  .cta:hover{transform:translateY(-1px)}
+
+  /* ── word card ── */
+  .word{
+    font-family:var(--display);font-weight:700;
+    font-size:clamp(40px,7.2vw,88px);line-height:1;letter-spacing:-.03em;
+    text-align:center;margin-bottom:clamp(18px,3vw,30px);
+  }
+  .split{display:grid;grid-template-columns:1fr 1px 1fr;gap:clamp(14px,3vw,34px)}
+  .seam{background:linear-gradient(180deg,transparent,var(--edge) 18%,var(--edge) 82%,transparent);position:relative}
+  .seam span{
+    position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    writing-mode:vertical-rl;
+    font-family:var(--mono);font-size:8px;letter-spacing:.42em;color:#4b5568;
+    background:var(--stage);padding:10px 2px;text-transform:uppercase;
+  }
+  .side{position:relative;text-align:center;padding:12px 4px;opacity:.34;transition:opacity .45s,transform .45s}
+  .side::before{
+    content:'';position:absolute;inset:-14% -8%;pointer-events:none;
+    background:radial-gradient(62% 58% at 50% 46%,var(--g),transparent 72%);
+    opacity:0;transition:opacity .5s;
+  }
+  .side.uk{--g:var(--uk-glow);--c:var(--uk)}
+  .side.us{--g:var(--us-glow);--c:var(--us)}
+  .side.on{opacity:1;transform:translateY(-5px)}
+  .side.on::before{opacity:1}
+  .side.idle{opacity:.72}
+  .tag{font-family:var(--mono);font-size:10px;letter-spacing:.22em;color:var(--c);text-transform:uppercase}
+  .tag em{display:block;font-family:var(--sans);font-style:normal;font-size:11px;letter-spacing:.06em;color:var(--dim);margin-top:4px;text-transform:none}
+  .ipa{
+    font-family:var(--ipa);font-size:clamp(24px,3.5vw,44px);line-height:1.35;
+    margin:14px 0 6px;cursor:pointer;position:relative;
+  }
+  .ipa mark{
+    background:color-mix(in srgb,var(--c) 24%,transparent);
+    color:#fff;border-bottom:2px solid var(--c);border-radius:4px;padding:0 .08em;
+  }
+  @supports not (background:color-mix(in srgb,red,blue)){
+    .side.uk .ipa mark{background:rgba(90,162,255,.24)}
+    .side.us .ipa mark{background:rgba(255,97,110,.24)}
+  }
+  .alt{font-family:var(--ipa);font-size:13px;color:var(--dim);min-height:19px}
+  .wave{display:flex;justify-content:center;align-items:flex-end;gap:3px;height:20px;margin-top:14px}
+  .wave b{width:3px;height:100%;background:var(--c);opacity:.28;border-radius:2px;transform:scaleY(.18);transform-origin:bottom}
+  .side.on .wave b{animation:pulse .62s ease-in-out infinite alternate;opacity:.9}
+  .wave b:nth-child(2n){animation-delay:.09s}
+  .wave b:nth-child(3n){animation-delay:.18s}
+  .wave b:nth-child(5n){animation-delay:.27s}
+  @keyframes pulse{from{transform:scaleY(.16)}to{transform:scaleY(1)}}
+
+  .note{
+    margin-top:clamp(18px,3vw,30px);text-align:center;
+    opacity:0;transition:opacity .45s;
+  }
+  .note.show{opacity:1}
+  .note b{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.24em;color:#4b5568;text-transform:uppercase;margin-bottom:7px}
+  .note p{font-size:clamp(14px,1.6vw,17px);color:var(--chalk);line-height:1.55}
+
+  /* ── closing card ── */
+  .recap{width:100%;border-collapse:collapse;font-size:13px}
+  .recap th{
+    font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--dim);text-align:left;padding:0 8px 9px;font-weight:400;
+  }
+  .recap th.b{color:var(--uk)} .recap th.a{color:var(--us)}
+  .recap td{padding:7px 8px;border-top:1px solid #1a2130;font-family:var(--ipa)}
+  .recap td:first-child{font-family:var(--display);font-weight:600;font-size:15px}
+  .recap tr{cursor:pointer}
+  .recap tr:hover td{background:#161d2b}
+  .recap .u{color:var(--uk)} .recap .a{color:var(--us)}
+  .recap mark{background:none;color:#fff;border-bottom:2px solid currentColor;padding:0 1px}
+
+  /* ── transport ── */
+  .transport{
+    display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+    padding:12px 16px;border-top:1px solid var(--edge);background:#0d1220;
+  }
+  .ticks{display:flex;gap:4px;flex:1;min-width:120px}
+  .ticks button{
+    flex:1;height:4px;border:0;border-radius:2px;background:#232d40;cursor:pointer;padding:0;
+  }
+  .ticks button.done{background:#3b4761}
+  .ticks button.now{background:var(--chalk)}
+  .btn{
+    background:none;border:1px solid var(--edge);color:var(--chalk);
+    border-radius:7px;padding:7px 12px;cursor:pointer;font-family:var(--sans);font-size:12.5px;
+  }
+  .btn:hover{border-color:#3b4761;background:#161d2b}
+  .btn.main{background:var(--chalk);color:#0a0d13;border-color:var(--chalk);font-weight:600;min-width:86px}
+  .rates{display:flex;gap:4px}
+  .rates button{
+    background:none;border:1px solid var(--edge);color:var(--dim);
+    border-radius:6px;padding:6px 9px;cursor:pointer;font-family:var(--mono);font-size:11px;
+  }
+  .rates button.on{border-color:var(--chalk);color:var(--chalk)}
+  .voices{
+    display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+    padding:9px 16px;border-top:1px solid var(--edge);
+    font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:#4b5568;text-transform:uppercase;
+  }
+  .voices select{
+    background:#0d1220;color:var(--dim);border:1px solid var(--edge);
+    border-radius:5px;padding:4px 6px;font-family:var(--sans);font-size:11px;max-width:190px;text-transform:none;letter-spacing:0;
+  }
+  .voices .warn{color:#f0b429;text-transform:none;letter-spacing:0;font-family:var(--sans);font-size:11px}
+
+  @media (max-width:720px){
+    .split{grid-template-columns:1fr;gap:0}
+    .seam{height:1px;width:100%;background:var(--edge);margin:14px 0}
+    .seam span{writing-mode:horizontal-tb;padding:2px 10px}
+    .stage{min-height:0}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition-duration:.01ms!important}
+  }
+  :focus-visible{outline:2px solid var(--uk);outline-offset:2px}
+</style>
+</head>
+<body>
+
+<div id="player">
+  <header class="bar">
+    <span>Language lab · <b>British</b> ↔ <i>American</i></span>
+    <span class="grow"></span>
+    <span id="counter">Word 00 / 10</span>
+    <button class="icon" id="fs" title="Full screen">⛶</button>
+  </header>
+
+  <section class="stage">
+
+    <div class="card live" id="cardTitle">
+      <div class="kicker">10 words · two readings</div>
+      <h1 class="title">Same word,<br><span class="b">British</span> ↔ <span class="a">American</span></h1>
+      <p class="lede">Every word is read twice: Britain first, America second. The <strong>highlighted part</strong> of the transcription is where the two accents split. Click either transcription to hear that side again.</p>
+      <button class="cta" id="start">Play</button>
+      <p class="lede" style="font-size:12.5px;margin-top:22px">Beyond these ten, the widest split of all: British English leaves the /r/ at the end of a word silent, American English sounds it.</p>
+    </div>
+
+    <div class="card" id="cardWord">
+      <h2 class="word" id="theWord"></h2>
+      <div class="split">
+        <div class="side uk" id="sideUK">
+          <div class="tag">British<em>Received Pronunciation</em></div>
+          <div class="ipa" id="ipaUK"></div>
+          <div class="alt" id="altUK"></div>
+          <div class="wave" id="waveUK"></div>
+        </div>
+        <div class="seam"><span>The Atlantic</span></div>
+        <div class="side us" id="sideUS">
+          <div class="tag">American<em>General American</em></div>
+          <div class="ipa" id="ipaUS"></div>
+          <div class="alt" id="altUS"></div>
+          <div class="wave" id="waveUS"></div>
+        </div>
+      </div>
+      <div class="note" id="note"><b>What changes</b><p id="noteText"></p></div>
+    </div>
+
+    <div class="card" id="cardEnd">
+      <div class="kicker">That's all ten · click a row to hear it again</div>
+      <table class="recap">
+        <thead><tr><th>Word</th><th class="b">British</th><th class="a">American</th></tr></thead>
+        <tbody id="recapBody"></tbody>
+      </table>
+    </div>
+
+  </section>
+
+  <footer class="transport">
+    <div class="ticks" id="ticks"></div>
+    <button class="btn" id="prev" title="Previous word">⏮</button>
+    <button class="btn main" id="play">Play</button>
+    <button class="btn" id="next" title="Next word">⏭</button>
+    <button class="btn" id="again">Replay</button>
+    <div class="rates" id="rates">
+      <button data-r="0.7">0.7×</button>
+      <button data-r="0.85" class="on">0.85×</button>
+      <button data-r="1">1×</button>
+    </div>
+  </footer>
+
+  <div class="voices">
+    <span>Voices</span>
+    <select id="selUK" title="British voice"></select>
+    <select id="selUS" title="American voice"></select>
+    <span class="warn" id="warn" hidden></span>
+  </div>
+</div>
+
+<script>
+const W = [
+  {w:'schedule', uk:'ˈ[ʃ]e[dj]uːl', us:'ˈ[sk]e[dʒ]uːl',
+   n:'The “sch” cluster is /ʃ/ in Britain — the sound in “shoe” — but /sk/ in America, as in “school”.'},
+  {w:'tomato', uk:'təˈm[ɑː]t[əʊ]', us:'təˈm[eɪ]t[oʊ]',
+   n:'The middle “a” is /ɑː/ as in “father” on the British side, /eɪ/ as in “face” on the American side.'},
+  {w:'vitamin', uk:'ˈv[ɪ]təmɪn', us:'ˈv[aɪ]təmɪn',
+   n:'The first syllable is a short /ɪ/ as in “sit” in Britain, /aɪ/ as in “sight” in America.'},
+  {w:'herb', uk:'[h]ɜːb', us:'ɜː[r]b',
+   n:'America drops the /h/ altogether — the word opens on the vowel — and sounds the /r/.'},
+  {w:'either', uk:'ˈ[aɪ]ðə(r)', ukAlt:'ˈiːðə(r)', us:'ˈ[iː]ðər', usAlt:'ˈaɪðər',
+   n:'/aɪ/ leans British and /iː/ leans American, but both readings are accepted on both sides of the ocean.'},
+  {w:'neither', uk:'ˈn[aɪ]ðə(r)', ukAlt:'ˈniːðə(r)', us:'ˈn[iː]ðər', usAlt:'ˈnaɪðər',
+   n:'It follows “either” exactly: /aɪ/ leans British, /iː/ leans American.'},
+  {w:'leisure', uk:'ˈl[e]ʒə(r)', us:'ˈl[iː]ʒər',
+   n:'The “lei” spelling is /e/ as in “bed” in Britain, /iː/ as in “see” in America.'},
+  {w:'privacy', uk:'ˈpr[ɪ]vəsi', us:'ˈpr[aɪ]vəsi',
+   n:'The first syllable is a short /ɪ/ as in “sit” in Britain, /aɪ/ as in “sight” in America.'},
+  {w:'garage', uk:'[ˈ]gærɑːʒ', ukAlt:'ˈgærɪdʒ', us:'gə[ˈ]rɑːʒ',
+   n:'The stress moves: GA-rage in Britain, ga-RAGE in America.'},
+  {w:'mobile', uk:'ˈm[əʊ]b[aɪl]', us:'ˈm[oʊ]b[əl]',
+   n:'Britain keeps a full /aɪl/ in the “-ile” ending; America reduces it to /əl/.'}
+];
+
+const $ = id => document.getElementById(id);
+const ipa = s => '/' + s.replace(/\[([^\]]+)\]/g, '<mark>$1</mark>') + '/';
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+let idx = -1, playing = false, token = 0, rate = 0.85;
+let ukVoice = null, usVoice = null;
+
+/* ── voices ── */
+function loadVoices(){
+  const all = speechSynthesis.getVoices().filter(v => /^en/i.test(v.lang));
+  if(!all.length) return;
+  const rank = (v, re) => (re.test(v.lang) ? 0 : 1) + (/google|natural|premium|enhanced/i.test(v.name) ? 0 : .5);
+  fill($('selUK'), [...all].sort((a,b) => rank(a,/GB/i) - rank(b,/GB/i)));
+  fill($('selUS'), [...all].sort((a,b) => rank(a,/US/i) - rank(b,/US/i)));
+  ukVoice = voiceByName($('selUK').value);
+  usVoice = voiceByName($('selUS').value);
+  const miss = [];
+  if(!ukVoice || !/GB/i.test(ukVoice.lang)) miss.push('British');
+  if(!usVoice || !/US/i.test(usVoice.lang)) miss.push('American');
+  const warn = $('warn');
+  warn.hidden = !miss.length;
+  if(miss.length) warn.textContent = 'No ' + miss.join(' or ') + ' voice on this computer. Add one in your system speech settings, then reload.';
+}
+function fill(sel, list){
+  const keep = sel.value;
+  sel.innerHTML = list.map(v => `<option value="${v.name}">${v.name} · ${v.lang}</option>`).join('');
+  if(list.some(v => v.name === keep)) sel.value = keep;
+}
+const voiceByName = n => speechSynthesis.getVoices().find(v => v.name === n) || null;
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+$('selUK').onchange = () => { ukVoice = voiceByName($('selUK').value); loadVoices(); };
+$('selUS').onchange = () => { usVoice = voiceByName($('selUS').value); loadVoices(); };
+
+/* ── speech ── */
+function speak(text, voice){
+  return new Promise(res => {
+    if(!('speechSynthesis' in window)) return setTimeout(res, 800);
+    const u = new SpeechSynthesisUtterance(text);
+    if(voice){ u.voice = voice; u.lang = voice.lang; } else u.lang = 'en-US';
+    u.rate = rate;
+    let done = false;
+    const fin = () => { if(done) return; done = true; clearTimeout(t); res(); };
+    u.onend = fin; u.onerror = fin;
+    const t = setTimeout(fin, 5000);
+    speechSynthesis.speak(u);
+  });
+}
+const shush = () => { try{ speechSynthesis.cancel(); }catch(e){} };
+
+/* ── build ── */
+['waveUK','waveUS'].forEach(id => $(id).innerHTML = '<b></b>'.repeat(14));
+$('ticks').innerHTML = W.map((_,i) => `<button data-i="${i}" title="Word ${i+1}"></button>`).join('');
+$('ticks').onclick = e => { const b = e.target.closest('button'); if(b) go(+b.dataset.i); };
+$('recapBody').innerHTML = W.map((d,i) => `<tr data-i="${i}">
+  <td>${d.w}</td><td class="u">${ipa(d.uk)}</td><td class="a">${ipa(d.us)}</td></tr>`).join('');
+$('recapBody').onclick = e => { const r = e.target.closest('tr'); if(r) go(+r.dataset.i); };
+
+function card(name){
+  ['cardTitle','cardWord','cardEnd'].forEach(c => $(c).classList.toggle('live', c === name));
+}
+function light(who){
+  $('sideUK').className = 'side uk' + (who === 'uk' ? ' on' : who ? '' : ' idle');
+  $('sideUS').className = 'side us' + (who === 'us' ? ' on' : who ? '' : ' idle');
+}
+function render(i){
+  const d = W[i];
+  $('theWord').textContent = d.w;
+  $('ipaUK').innerHTML = ipa(d.uk);
+  $('ipaUS').innerHTML = ipa(d.us);
+  $('altUK').textContent = d.ukAlt ? 'also /' + d.ukAlt + '/' : '';
+  $('altUS').textContent = d.usAlt ? 'also /' + d.usAlt + '/' : '';
+  $('noteText').textContent = d.n;
+  $('note').classList.remove('show');
+  light(null);
+  card('cardWord');
+  $('counter').textContent = 'Word ' + String(i+1).padStart(2,'0') + ' / 10';
+  [...$('ticks').children].forEach((b,k) => {
+    b.className = k < i ? 'done' : k === i ? 'now' : '';
+  });
+}
+
+/* ── playback ── */
+async function run(i){
+  const me = ++token;
+  render(i);
+  if(!playing){ $('note').classList.add('show'); return; }
+  await sleep(450); if(me !== token) return;
+  light('uk'); await speak(W[i].w, ukVoice); if(me !== token) return;
+  light(null); await sleep(300); if(me !== token) return;
+  light('us'); await speak(W[i].w, usVoice); if(me !== token) return;
+  light(null); await sleep(260); if(me !== token) return;
+  $('note').classList.add('show');
+  await sleep(1900); if(me !== token) return;
+  if(playing) go(i + 1);
+}
+function go(i){
+  shush();
+  idx = i;
+  if(idx >= W.length){
+    token++; playing = false; setBtn();
+    card('cardEnd'); $('counter').textContent = 'End · 10 / 10';
+    [...$('ticks').children].forEach(b => b.className = 'done');
+    return;
+  }
+  if(idx < 0){ token++; card('cardTitle'); return; }
+  run(idx);
+}
+function setBtn(){ $('play').textContent = playing ? 'Pause' : 'Play'; }
+function toggle(){
+  if(playing){ playing = false; token++; shush(); light(null); $('note').classList.add('show'); }
+  else { playing = true; if(idx < 0 || idx >= W.length) idx = 0; run(idx); }
+  setBtn();
+}
+
+$('start').onclick = () => { playing = true; setBtn(); go(0); };
+$('play').onclick = toggle;
+$('next').onclick = () => go(Math.min(idx + 1, W.length));
+$('prev').onclick = () => go(Math.max(idx - 1, 0));
+$('again').onclick = () => { if(idx >= 0 && idx < W.length) run(idx); };
+$('rates').onclick = e => {
+  const b = e.target.closest('button'); if(!b) return;
+  rate = +b.dataset.r;
+  [...$('rates').children].forEach(x => x.classList.toggle('on', x === b));
+};
+$('fs').onclick = () => {
+  if(document.fullscreenElement) document.exitFullscreen();
+  else $('player').requestFullscreen?.();
+};
+
+/* click one side to hear it on its own */
+[['ipaUK','uk'],['ipaUS','us']].forEach(([id,side]) => {
+  $(id).onclick = async () => {
+    if(idx < 0 || idx >= W.length) return;
+    playing = false; token++; setBtn(); shush();
+    light(side); $('note').classList.add('show');
+    await speak(W[idx].w, side === 'uk' ? ukVoice : usVoice);
+    light(null);
+  };
+});
+
+addEventListener('keydown', e => {
+  if(e.target.tagName === 'SELECT') return;
+  if(e.code === 'Space'){ e.preventDefault(); idx < 0 ? $('start').click() : toggle(); }
+  if(e.code === 'ArrowRight') $('next').click();
+  if(e.code === 'ArrowLeft') $('prev').click();
+  if(e.key.toLowerCase() === 'r') $('again').click();
+});
+addEventListener('beforeunload', shush);
+</script>
+</body>
+</html>
