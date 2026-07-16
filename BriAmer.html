@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>British English vs. American English Presentation</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React & ReactDOM 18 -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <!-- Babel compiler for running JSX directly in the browser -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        .animate-fadeInSlide { animation: fadeInSlide 0.4s ease-out forwards; }
+        @keyframes fadeInSlide { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-modalPop { animation: modalPop 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes modalPop { from { opacity: 0; transform: scale(0.96) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        .animate-fadeInUp { animation: fadeInUp 0.4s ease-out forwards; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-slate-100 font-sans antialiased overflow-hidden">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, createContext, useContext, useMemo, useRef } = React;
+
+        const ModalContext = createContext(null);
+
+        const IconVolume = ({ width = 18, height = 18, className = "" }) => (
+          <svg xmlns="http://www.w3.org/2000/svg" width={width} height={height} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>
+        );
+        const IconInfo = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>;
+        const IconClose = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>;
+        const IconVideo = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg>;
+        const IconCheck = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>;
+        const IconX = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>;
+        const IconTable = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>;
+        const IconMenu = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>;
+        const IconBook = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path></svg>;
+
+        const speak = (text, accent) => {
+          if (!('speechSynthesis' in window)) {
+            console.warn("Speech Synthesis is not supported in this browser.");
+            return;
+          }
+          const cleanText = text.replace(/[\/\(\)]/g, ' ');
+          window.speechSynthesis.cancel();
+          const utterance = new SpeechSynthesisUtterance(cleanText);
+          const voices = window.speechSynthesis.getVoices();
+          
+          let selectedVoice = voices.find(v => v.lang.includes(accent === 'uk' ? 'GB' : 'US') && (v.name.includes('Female') || v.name.includes('Google')));
+          if (!selectedVoice) selectedVoice = voices.find(v => v.lang.includes(accent === 'uk' ? 'GB' : 'US'));
+          
+          if (selectedVoice) utterance.voice = selectedVoice;
+          utterance.rate = 0.85; 
+          window.speechSynthesis.speak(utterance);
+        };
+
+        const Modal = ({ isOpen, onClose, content }) => {
+          const [iframeSrc, setIframeSrc] = useState("");
+          const [fileName, setFileName] = useState("");
+          const fileInputRef = useRef(null);
+
+          useEffect(() => {
+            if (isOpen && content.type === 'iframe') {
+              setIframeSrc(content.url || "");
+              setFileName(content.url || "No file loaded");
+            }
+          }, [isOpen, content]);
+
+          if (!isOpen) return null;
+          
+          const handleFileChange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+              const blobUrl = URL.createObjectURL(file);
+              setIframeSrc(blobUrl);
+              setFileName(file.name);
+            }
+          };
+
+          const renderTable = () => (
+            <div className="w-full">
+              <div className="bg-yellow-50 text-yellow-800 p-3 mb-4 rounded-lg flex items-center text-sm font-medium">
+                <span className="mr-2">💡</span> You can click on any word in the table to hear its pronunciation.
+              </div>
+              <div className="overflow-x-auto rounded-xl border border-slate-200">
+                <table className="w-full text-left text-base">
+                  <thead className="bg-slate-100">
+                    <tr>
+                      {content.headers.map((h, i) => (
+                        <th key={i} className={`p-4 font-bold ${i === 1 ? 'text-blue-700' : i === 2 ? 'text-red-700' : 'text-slate-700'}`}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200 text-slate-700">
+                    {content.rows.map((row, rowIndex) => (
+                      <tr key={rowIndex} className="hover:bg-slate-50 transition-colors">
+                        {row.map((cell, cellIndex) => (
+                          <td 
+                            key={cellIndex} 
+                            className={`p-4 cursor-pointer hover:text-indigo-600 transition-colors ${cellIndex === 1 ? 'text-blue-900 font-medium' : cellIndex === 2 ? 'text-red-900 font-medium' : 'font-semibold'}`}
+                            onClick={() => {
+                              let accent = 'us';
+                              if(cellIndex === 1) accent = 'uk';
+                              else if(cellIndex === 2) accent = 'us';
+                              speak(cell, accent);
+                            }}
+                            title="Click to listen"
+                          >
+                            {cell}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          );
+
+          const isYouTube = content.videoId && (content.videoId.includes('youtube.com') || content.videoId.includes('youtu.be'));
+
+          return (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/80 backdrop-blur-sm transition-opacity p-4" onClick={onClose}>
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[92vh] flex flex-col animate-modalPop relative" onClick={e => e.stopPropagation()}>
+                <div className="flex justify-between items-center p-5 border-b bg-slate-50 rounded-t-2xl shrink-0">
+                  <h3 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                    {content.type === 'video' ? <IconVideo /> : content.type === 'table' ? <IconTable /> : content.type === 'references' ? <IconBook /> : <IconInfo />}
+                    {content.title || 'Details'}
+                  </h3>
+                  <button onClick={onClose} className="p-2 bg-slate-200 hover:bg-red-500 hover:text-white rounded-full transition-colors"><IconClose /></button>
+                </div>
+                <div className="p-6 overflow-y-auto flex-grow flex flex-col">
+                  {content.type === 'video' ? (
+                    <div className="aspect-video w-full rounded-xl overflow-hidden bg-slate-900 flex items-center justify-center">
+                      {isYouTube ? (
+                        <iframe 
+                          width="100%" 
+                          height="100%" 
+                          src={content.videoId?.startsWith('http') ? content.videoId : `https://www.youtube.com/embed/${content.videoId}`} 
+                          title="YouTube video player" 
+                          frameBorder="0" 
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                          allowFullScreen
+                        ></iframe>
+                      ) : (
+                        <video 
+                          width="100%" 
+                          height="100%" 
+                          controls 
+                          autoPlay 
+                          className="w-full h-full object-contain bg-black"
+                          src={content.videoId}
+                        >
+                          Your browser does not support HTML5 video. Please check the file format (mp4/webm).
+                        </video>
+                      )}
+                    </div>
+                  ) : content.type === 'table' ? (
+                    renderTable()
+                  ) : content.type === 'references' ? (
+                    <div className="w-full">
+                      <ul className="space-y-4">
+                        {content.data.map(ref => (
+                          <li key={ref.id} className="bg-slate-50 p-4 rounded-xl border border-slate-200 text-sm text-slate-700 flex flex-col gap-2">
+                            <div>
+                               <span className="font-bold text-slate-900 mr-2">[{ref.id}]</span>
+                               {ref.text}
+                            </div>
+                            <div className="flex justify-between items-center mt-2 border-t border-slate-200 pt-2">
+                               <a href={ref.link} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1">
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                                  View Source
+                               </a>
+                               <span className="text-xs font-semibold bg-slate-200 text-slate-600 px-2 py-1 rounded-md">Cited on p. {ref.pages}</span>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : content.type === 'iframe' ? (
+                    <div className="w-full flex flex-col space-y-4 flex-grow">
+                      <div className="flex flex-col sm:flex-row justify-between items-center bg-indigo-50 p-4 rounded-xl border border-indigo-200 text-slate-800 gap-3 shrink-0">
+                        <div className="flex items-center space-x-3 w-full sm:w-auto overflow-hidden">
+                          <span className="text-3xl shrink-0">💻</span>
+                          <div className="truncate">
+                            <h4 className="font-bold text-base text-indigo-950">Local HTML File Viewer</h4>
+                            <p className="text-xs text-slate-600 truncate">Currently displaying: <b className="text-indigo-700">{fileName}</b></p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center space-x-2 w-full sm:w-auto shrink-0">
+                          <input 
+                            type="file" 
+                            accept=".html" 
+                            ref={fileInputRef} 
+                            onChange={handleFileChange} 
+                            className="hidden" 
+                          />
+                          <button 
+                            onClick={() => fileInputRef.current.click()} 
+                            className="w-full sm:w-auto bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold px-4 py-2.5 rounded-lg shadow transition-all flex items-center justify-center space-x-2 cursor-pointer"
+                          >
+                            <span>📁 Choose Local File (.html)</span>
+                          </button>
+                        </div>
+                      </div>
+                      
+                      <div className="w-full h-[60vh] rounded-xl overflow-hidden border-2 border-slate-300 bg-white relative flex flex-col items-center justify-center">
+                        {!iframeSrc ? (
+                          <div className="flex flex-col items-center justify-center p-8 text-center text-slate-500 space-y-3">
+                            <span className="text-6xl">📂</span>
+                            <p className="text-lg font-bold text-slate-700">No HTML File Loaded Yet</p>
+                            <p className="text-sm max-w-md">Please click the <b className="text-indigo-600">"📁 Choose Local File"</b> button at the top right to select and display your HTML app file here.</p>
+                          </div>
+                        ) : (
+                          <iframe 
+                            src={iframeSrc} 
+                            title="Local HTML App"
+                            className="w-full h-full border-0 absolute inset-0 bg-white"
+                            allow="clipboard-write; fullscreen; microphone"
+                          ></iframe>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 flex flex-col items-center text-center space-y-2">
+                           <span className="text-sm font-bold text-blue-500 uppercase tracking-widest">British English</span>
+                           <span className="text-2xl font-bold text-blue-900">{content.data?.uk}</span>
+                           <button onClick={() => speak(content.data?.uk, 'uk')} className="mt-2 flex items-center text-xs font-bold bg-blue-200 hover:bg-blue-600 hover:text-white text-blue-800 px-3 py-1.5 rounded-full transition-colors"><IconVolume width={14} height={14} className="mr-1"/> Play UK</button>
+                        </div>
+                        <div className="bg-red-50 p-4 rounded-xl border border-red-100 flex flex-col items-center text-center space-y-2">
+                           <span className="text-sm font-bold text-red-500 uppercase tracking-widest">American English</span>
+                           <span className="text-2xl font-bold text-red-900">{content.data?.us}</span>
+                           <button onClick={() => speak(content.data?.us, 'us')} className="mt-2 flex items-center text-xs font-bold bg-red-200 hover:bg-red-600 hover:text-white text-red-800 px-3 py-1.5 rounded-full transition-colors"><IconVolume width={14} height={14} className="mr-1"/> Play US</button>
+                        </div>
+                      </div>
+                      {content.data?.warning && (
+                        <div className="bg-yellow-50 text-yellow-800 p-4 rounded-xl border border-yellow-200 flex items-start">
+                          <span className="text-2xl mr-3">⚠️</span>
+                          <p className="text-sm font-medium mt-1">{content.data.warning}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        };
+
+        function VocabCard({ uk, us, img }) {
+          return (
+            <div className="bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
+              <div className="h-40 overflow-hidden relative">
+                <div className="absolute inset-0 bg-slate-900/10 group-hover:bg-transparent transition-colors z-10"></div>
+                <img src={img} alt={uk} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+              </div>
+              <div className="p-5 flex flex-col justify-between space-y-3">
+                <div className="flex justify-between items-center border-b border-slate-100 pb-2">
+                  <button onClick={() => speak(uk, 'uk')} className="flex items-center text-xs font-bold bg-blue-100 hover:bg-blue-600 hover:text-white text-blue-800 px-3 py-1 rounded-full uppercase tracking-wide cursor-pointer transition-colors" title="Listen UK">
+                    <IconVolume width={14} height={14} className="mr-1"/> UK
+                  </button>
+                  <span className="font-bold text-slate-800 text-lg">{uk}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <button onClick={() => speak(us, 'us')} className="flex items-center text-xs font-bold bg-red-100 hover:bg-red-600 hover:text-white text-red-800 px-3 py-1 rounded-full uppercase tracking-wide cursor-pointer transition-colors" title="Listen US">
+                    <IconVolume width={14} height={14} className="mr-1"/> US
+                  </button>
+                  <span className="font-bold text-slate-800 text-lg">{us}</span>
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        function InteractiveButton({ type, word, title, data, videoId, className = "" }) {
+          const openModal = useContext(ModalContext);
+
+          if (type === 'audio') {
+            return (
+              <div className={`flex items-center justify-between bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow ${className}`}>
+                <span className="font-bold text-slate-800 text-xl tracking-wide">"{word}"</span>
+                <div className="flex space-x-2">
+                  <button onClick={() => speak(word, 'uk')} className="flex items-center text-sm font-semibold bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 px-4 py-2 rounded-lg transition-colors duration-200">
+                    <IconVolume /> <span className="ml-2">UK</span>
+                  </button>
+                  <button onClick={() => speak(word, 'us')} className="flex items-center text-sm font-semibold bg-red-50 hover:bg-red-600 hover:text-white text-red-700 px-4 py-2 rounded-lg transition-colors duration-200">
+                    <IconVolume /> <span className="ml-2">US</span>
+                  </button>
+                </div>
+              </div>
+            );
+          }
+
+          if (type === 'modal') {
+            return (
+              <button
+                onClick={() => {
+                  speak(title, 'us'); 
+                  openModal({ type: 'info', title, data });
+                }}
+                className={`bg-white p-6 rounded-2xl border-2 border-slate-200 shadow-sm hover:border-indigo-500 hover:shadow-lg transition-all transform hover:-translate-y-1 flex flex-col items-center justify-center space-y-3 cursor-pointer group ${className}`}
+              >
+                <span className="text-3xl group-hover:scale-110 transition-transform">🔍</span>
+                <span className="font-bold text-slate-800 text-xl">{title}</span>
+                <span className="text-sm text-indigo-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity">Click to reveal</span>
+              </button>
+            );
+          }
+
+          if (type === 'video') {
+            return (
+              <button
+                onClick={() => openModal({ type: 'video', title, videoId })}
+                className={`flex items-center justify-center space-x-3 bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-full font-bold text-lg shadow-lg hover:shadow-red-500/50 transition-all transform hover:-translate-y-1 ${className}`}
+              >
+                <IconVideo /> <span>{title}</span>
+              </button>
+            );
+          }
+
+          return null;
+        }
+
+        function TableButton({ title, headers, rows }) {
+          const openModal = useContext(ModalContext);
+          return (
+            <button
+              onClick={() => openModal({ type: 'table', title, headers, rows })}
+              className="bg-white border border-slate-200 p-4 rounded-2xl shadow-sm hover:shadow-md hover:border-blue-400 flex flex-col items-start justify-center transition-all group w-full text-left h-full"
+            >
+              <div className="bg-blue-50 text-blue-600 w-10 h-10 rounded-xl flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                <IconTable />
+              </div>
+              <h3 className="font-bold text-slate-800 text-base">{title}</h3>
+              <span className="text-xs text-slate-400 mt-1 uppercase tracking-widest font-semibold group-hover:text-blue-500">View Data</span>
+            </button>
+          );
+        }
+
+        const referencesList = [
+          { id: 1, text: "Algeo, J. (2006). British or American English? A Handbook of Word and Grammar Patterns. Cambridge University Press.", link: "https://www.cambridge.org/core_title/gb/122734", pages: "8–13" },
+          { id: 2, text: "Baugh, A. C., & Cable, T. (2013). A History of the English Language (6th ed.). Routledge.", link: "https://www.routledge.com/A-History-of-the-English-Language/Baugh-Cable/p/book/9780415655958", pages: "4" },
+          { id: 3, text: "Crystal, D. (2003). English as a Global Language (2nd ed.). Cambridge University Press.", link: "https://www.cambridge.org/core/books/english-as-a-global-language/55FF02AE5915539906778C02F0F5195E", pages: "3" },
+          { id: 4, text: "Crystal, D. (2019). The Cambridge Encyclopedia of the English Language (3rd ed.). Cambridge University Press.", link: "https://www.cambridge.org/highereducation/books/the-cambridge-encyclopedia-of-the-english-language/2B10AC8766B73D09955C899572C1E7EC", pages: "4, 6" },
+          { id: 5, text: "Davies, C. (2005). Divided by a Common Language: A Guide to British and American English. Houghton Mifflin.", link: "https://books.google.com/books/about/Divided_by_a_Common_Language.html?id=13SyhqA6R28C", pages: "8–12, 14" },
+          { id: 6, text: "Kachru, B. B. (1985). Standards, codification and sociolinguistic realism: The English language in the outer circle. In R. Quirk & H. G. Widdowson (Eds.), English in the World. Cambridge University Press.", link: "https://scholar.google.com/scholar?q=Kachru+Standards+codification+sociolinguistic+realism+outer+circle", pages: "6" },
+          { id: 7, text: "Tottie, G. (2002). An Introduction to American English. Blackwell.", link: "https://blackwells.co.uk/bookshop/product/An-Introduction-To-American-English-by-Gunnel-Tottie/9780631197928", pages: "7" },
+          { id: 8, text: "Trudgill, P., & Hannah, J. (2017). International English: A Guide to Varieties of English (6th ed.). Routledge.", link: "https://www.routledge.com/International-English-A-Guide-to-Varieties-of-English-Around-the-World/Trudgill-Hannah/p/book/9781138233690", pages: "6, 14" },
+          { id: 9, text: "Wells, J. C. (1982). Accents of English (Vols. 1–3). Cambridge University Press.", link: "https://www.cambridge.org/core/books/accents-of-english/A9495FCF7CC13D1D11FADB3DE2F335F6", pages: "8–9" }
+        ];
+
+        function PresentationApp() {
+          const [currentSlide, setCurrentSlide] = useState(0);
+          const [modalState, setModalState] = useState({ isOpen: false, content: {} });
+          const [quizStates, setQuizStates] = useState({});
+          const [sidebarOpen, setSidebarOpen] = useState(true);
+
+          const openModal = (content) => setModalState({ isOpen: true, content });
+          const closeModal = () => setModalState({ isOpen: false, content: {} });
+
+          useEffect(() => {
+            if ('speechSynthesis' in window) {
+              window.speechSynthesis.getVoices();
+              window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+            }
+          }, []);
+
+          const dataTable2 = [
+            { word: 'schedule', uk: "/ˈʃedju:l/", us: "/ˈskedʒu:l/" },
+            { word: 'tomato', uk: "/təˈmɑ:təʊ/", us: "/təˈmeɪtoʊ/" },
+            { word: 'vitamin', uk: "/ˈvɪtəmɪn/", us: "/ˈvaɪtəmɪn/" },
+            { word: 'herb', uk: "/hɜ:b/", us: "/ɜ:b/ (or /ɜ:rb/)" },
+            { word: 'either', uk: "/ˈaɪðə(r)/ (also /ˈi:ðə(r)/)", us: "/ˈi:ðər/ (also /aɪðər/)" },
+            { word: 'neither', uk: "/ˈnaɪðə(r)/ (also /ni:ðə(r)/)", us: "/ˈni:ðər/ (also /naɪðər/)" },
+            { word: 'leisure', uk: "/ˈleʒə(r)/", us: "/ˈli:ʒər/" },
+            { word: 'privacy', uk: "/ˈprɪvəsi/", us: "/ˈpraɪvəsi/" },
+            { word: 'garage', uk: "/ˈɡærɑ:ʒ/ (or /ɡærɪdʒ/)", us: "/ɡəˈrɑ:ʒ/" },
+            { word: 'mobile', uk: "/ˈməʊbaɪl/", us: "/ˈmoʊbəl/" }
+          ];
+
+          const presentationData = useMemo(() => [
+            {
+              id: 1, type: 'cover', title: 'British English vs. American English', subtitle: 'A Comparative Study of Pronunciation, Vocabulary, Grammar, and Usage', authors: ['Thai Minh Tam', 'Tran Minh Tan', 'Nguyen Thi Thanh Thuy'], classInfo: 'DTNN.TX.T101', instructor: 'Nguyen Thi Xuan Hong', date: '03/07/2026'
+            },
+            {
+              id: 2, type: 'content', title: 'General Information', content: (
+                <div className="space-y-6 text-lg text-slate-700 leading-relaxed">
+                  <p>English is today the most widely used language in the world and the closest thing humanity has to a truly global means of communication.</p>
+                  <div className="grid grid-cols-3 gap-6">
+                    <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 flex flex-col items-center text-center"><span className="text-4xl mb-3">🌍</span><h4 className="font-bold text-slate-800 mb-2">Native Speakers</h4><p className="text-3xl font-black text-blue-600 mb-2">~400M</p><p className="text-sm">People use it as their mother tongue.</p></div>
+                    <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 flex flex-col items-center text-center"><span className="text-4xl mb-3">🗣️</span><h4 className="font-bold text-slate-800 mb-2">Second Language</h4><p className="text-3xl font-black text-red-600 mb-2">&gt; 1 Billion</p><p className="text-sm">Foreign or second language.</p></div>
+                    <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 flex flex-col items-center text-center"><span className="text-4xl mb-3">💼</span><h4 className="font-bold text-slate-800 mb-2">Lingua Franca</h4><p className="text-xl font-bold text-slate-700 mb-2">Global Standard</p><p className="text-sm">Business, science, internet.</p></div>
+                  </div>
+                  <p className="bg-blue-50 p-4 rounded-lg mt-4 text-center italic text-blue-900 font-medium">British English and American English are the two most influential and widely used standards worldwide.</p>
+                </div>
+              )
+            },
+            {
+              id: 3, type: 'content', title: 'A Brief History of English', content: (
+                <div className="space-y-6 text-lg text-slate-700 leading-relaxed h-full flex flex-col justify-center">
+                  <p>English belongs to the Germanic branch of the Indo-European language family. Its development is divided into four main periods:</p>
+                  <div className="grid grid-cols-4 gap-4">
+                    <div className="bg-slate-50 p-4 rounded-xl border-t-4 border-slate-300 shadow-sm"><span className="text-xs font-bold text-slate-400 block mb-1">5th Century AD</span><h4 className="font-bold text-slate-800 mb-2">Old English</h4><p className="text-sm">Brought by Germanic tribes. Highly inflected (e.g., Beowulf).</p></div>
+                    <div className="bg-slate-50 p-4 rounded-xl border-t-4 border-blue-400 shadow-sm"><span className="text-xs font-bold text-slate-400 block mb-1">11th Century</span><h4 className="font-bold text-slate-800 mb-2">Middle English</h4><p className="text-sm">Post-1066 Norman Conquest. French/Latin influence.</p></div>
+                    <div className="bg-slate-50 p-4 rounded-xl border-t-4 border-indigo-400 shadow-sm"><span className="text-xs font-bold text-slate-400 block mb-1">1500 - 1700</span><h4 className="font-bold text-slate-800 mb-2">Early Modern</h4><p className="text-sm">Great Vowel Shift, printing press, Shakespeare.</p></div>
+                    <div className="bg-slate-50 p-4 rounded-xl border-t-4 border-red-400 shadow-sm"><span className="text-xs font-bold text-slate-400 block mb-1">1700 - Present</span><h4 className="font-bold text-slate-800 mb-2">Modern English</h4><p className="text-sm">Global spread. Divergence of British and American varieties.</p></div>
+                  </div>
+                </div>
+              )
+            },
+            {
+              id: 4, type: 'content', title: 'The Divergence', content: (
+                <div className="space-y-6 text-lg text-slate-700 leading-relaxed">
+                  <p>The separation began in the early 17th century with settlements in North America. Two main processes explain their differences:</p>
+                  <div className="grid grid-cols-2 gap-8 mt-4">
+                    <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                      <h3 className="font-bold text-2xl text-slate-800 mb-3 text-blue-800">1. Colonial Lag</h3>
+                      <p className="mb-4 text-base">Colonies tend to preserve older features of a language that subsequently change in the homeland.</p>
+                      <ul className="list-disc pl-5 text-sm space-y-2"><li><strong>Rhoticity:</strong> Americans kept the 17th-century 'r' sound.</li><li><strong>Vocabulary:</strong> US kept older words like <em>fall</em> and <em>gotten</em>.</li></ul>
+                    </div>
+                    <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                      <h3 className="font-bold text-2xl text-slate-800 mb-3 text-red-800">2. Independent Innovation</h3>
+                      <p className="mb-4 text-base">Settlers encountered an unfamiliar continent and borrowed freely to describe new landscapes.</p>
+                      <ul className="list-disc pl-5 text-sm space-y-2"><li><strong>Borrowings:</strong> Spanish (<em>canyon</em>), Dutch (<em>cookie</em>).</li><li><strong>Webster's Reforms:</strong> Noah Webster simplified US spelling in 1828 (<em>color</em> vs <em>colour</em>).</li></ul>
+                    </div>
+                  </div>
+                </div>
+              )
+            },
+            {
+              id: 5, type: 'content', title: 'English as a Global Language', content: (
+                <div className="space-y-6 text-lg text-slate-700">
+                  <p>English became global for two main historical reasons:</p>
+                  <div className="grid grid-cols-2 gap-6">
+                     <div className="bg-blue-50 p-6 rounded-xl border border-blue-100"><h4 className="font-bold text-blue-900 mb-2">1. The British Empire</h4><p className="text-sm text-blue-800">Britain built the largest empire in history, planting English across North America, Africa, Asia, and Australasia.</p></div>
+                     <div className="bg-red-50 p-6 rounded-xl border border-red-100"><h4 className="font-bold text-red-900 mb-2">2. The Rise of the US</h4><p className="text-sm text-red-800">Post-WWII, the US became a dominant power. American English spread via global media, technology, and the internet.</p></div>
+                  </div>
+                  <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 text-center">
+                    <h4 className="font-bold text-slate-800 mb-4">Braj Kachru's "Three Circles" Model</h4>
+                    <div className="flex justify-center space-x-4">
+                      <div className="bg-white p-3 rounded-lg shadow-sm border border-slate-200"><span className="font-bold">Inner:</span> UK, US, Canada</div>
+                      <div className="bg-white p-3 rounded-lg shadow-sm border border-slate-200"><span className="font-bold">Outer:</span> India, Singapore</div>
+                      <div className="bg-white p-3 rounded-lg shadow-sm border border-slate-200"><span className="font-bold">Expanding:</span> Vietnam, China</div>
+                    </div>
+                  </div>
+                </div>
+              )
+            },
+            {
+              id: 6, type: 'content', title: 'English Dialects Around the World', content: (
+                 <div className="grid grid-cols-3 gap-6 w-full text-slate-700">
+                    <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200">
+                      <h4 className="font-bold text-slate-800 text-lg mb-2">🇨🇦 Canadian</h4><p className="text-sm">Blends UK/US features. Rhotic pronunciation like US, UK spellings (<em>colour</em>). Tag: "eh?".</p>
+                    </div>
+                    <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200">
+                      <h4 className="font-bold text-slate-800 text-lg mb-2">🇦🇺 Australian</h4><p className="text-sm">Non-rhotic. Distinct vowels. Shortened words: <em>arvo</em> (afternoon), <em>barbie</em>.</p>
+                    </div>
+                    <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200">
+                      <h4 className="font-bold text-slate-800 text-lg mb-2">🇮🇪 Irish</h4><p className="text-sm">Influenced by Irish language rhythm. Usually rhotic.</p>
+                    </div>
+                    <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200">
+                      <h4 className="font-bold text-slate-800 text-lg mb-2">🇮🇳 Indian</h4><p className="text-sm">Influenced by Indian languages. Coinages like <em>prepone</em>.</p>
+                    </div>
+                    <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200">
+                      <h4 className="font-bold text-slate-800 text-lg mb-2">🇿🇦 South African</h4><p className="text-sm">Shaped by Afrikaans. Non-rhotic. Borrowings: <em>veld</em>, <em>braai</em>.</p>
+                    </div>
+                 </div>
+              )
+            },
+            {
+              id: 7, type: 'content', title: 'Cultural Features', content: (
+                <div className="grid grid-cols-2 gap-10 h-full">
+                     <div className="bg-slate-50 rounded-3xl p-8 border border-slate-200">
+                        <h3 className="text-2xl font-bold text-blue-900 mb-4 border-b border-blue-200 pb-2">☕ British Communication</h3>
+                        <ul className="space-y-4 text-slate-700 text-base">
+                          <li><strong>Tradition & Class:</strong> Received Pronunciation tied to upper classes (weakening now).</li>
+                          <li><strong>Politeness & Understatement:</strong> "That's not bad" means "that's very good."</li>
+                          <li><strong>Indirectness:</strong> "I'm not sure that's quite right" means "that is wrong."</li>
+                        </ul>
+                     </div>
+                     <div className="bg-slate-50 rounded-3xl p-8 border border-slate-200">
+                        <h3 className="text-2xl font-bold text-red-900 mb-4 border-b border-red-200 pb-2">🗽 American Communication</h3>
+                        <ul className="space-y-4 text-slate-700 text-base">
+                          <li><strong>Egalitarian:</strong> Informal, direct, and enthusiastic.</li>
+                          <li><strong>Immigrant Influence:</strong> Heavy borrowing from Spanish, Dutch, German.</li>
+                          <li><strong>Explicitness:</strong> Less understatement. Direct and literal communication.</li>
+                        </ul>
+                     </div>
+                  </div>
+              )
+            },
+            {
+              id: 8, type: 'content', title: 'The Spread and Migration', content: (
+                <div className="flex flex-col items-center justify-center h-full space-y-8 text-center text-slate-700">
+                   <h3 className="text-2xl font-bold text-slate-800">What happens when a language migrates?</h3>
+                   <div className="grid grid-cols-3 gap-6 w-full text-left">
+                      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <div className="text-3xl mb-4">🧊</div><h4 className="font-bold mb-2">1. It Freezes</h4><p className="text-sm">Partly frozen at the stage when settlers left.</p>
+                      </div>
+                      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <div className="text-3xl mb-4">🌱</div><h4 className="font-bold mb-2">2. It Adapts</h4><p className="text-sm">Develops new features to describe unfamiliar environments.</p>
+                      </div>
+                      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <div className="text-3xl mb-4">✂️</div><h4 className="font-bold mb-2">3. It Separates</h4><p className="text-sm">Stops sharing in changes taking place in the homeland.</p>
+                      </div>
+                   </div>
+                </div>
+              )
+            },
+            {
+              id: 9, type: 'interactive', title: 'Pronunciation Differences', content: (
+                <div className="flex flex-col h-full justify-between py-1">
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                      <div>
+                        <h3 className="font-bold text-lg text-blue-900 mb-1">Rhoticity (The 'r' sound)</h3>
+                        <p className="text-slate-600 mb-3 text-xs">US is rhotic (pronounces 'r'). UK is often non-rhotic (drops the 'r' after vowels).</p>
+                      </div>
+                      <div className="space-y-2">
+                        <InteractiveButton type="audio" word="car" />
+                        <InteractiveButton type="audio" word="hard" />
+                      </div>
+                    </div>
+                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                      <div>
+                        <h3 className="font-bold text-lg text-green-900 mb-1">The "t" between vowels</h3>
+                        <p className="text-slate-600 mb-3 text-xs">US "flaps" the 't' (sounds like 'd'). UK is crisp or uses a glottal stop.</p>
+                      </div>
+                      <div className="space-y-2">
+                        <InteractiveButton type="audio" word="water" />
+                        <InteractiveButton type="audio" word="better" />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-6 mt-4 pt-2 border-t border-slate-100">
+                    <div className="h-full">
+                       <TableButton 
+                        title="Table 2: Other Pronunciation Differences" 
+                        headers={['Word', 'British English (IPA)', 'American English (IPA)']} 
+                        rows={dataTable2.map(item => [item.word, item.uk, item.us])} 
+                      />
+                    </div>
+
+                    <button
+                      onClick={() => openModal({ 
+                        type: 'iframe', 
+                        title: 'Interactive Pronunciation Practice App',
+                        url: 'app.html' 
+                      })}
+                      className="w-full h-full bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 hover:from-amber-600 hover:to-red-600 text-white p-5 rounded-2xl shadow-lg hover:shadow-xl transition-all flex flex-col items-center justify-center text-center group cursor-pointer border-2 border-amber-300 transform hover:-translate-y-1"
+                    >
+                      <div className="flex items-center space-x-2 mb-1">
+                        <span className="text-2xl group-hover:scale-125 transition-transform duration-300">🚀</span>
+                        <span className="font-extrabold text-lg tracking-wide uppercase">Open Interactive App</span>
+                      </div>
+                      <span className="text-xs text-amber-100 font-medium">Click here to launch the interactive pronunciation app</span>
+                    </button>
+                  </div>
+                </div>
+              )
+            },
+            {
+              id: 10, type: 'vocabulary', title: 'Vocabulary Differences', content: (
+                <div className="flex flex-col h-full space-y-4">
+                  <div className="grid grid-cols-3 gap-4">
+                    <VocabCard uk="lorry" us="truck" img="https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=400&q=80" />
+                    <VocabCard uk="petrol" us="gas" img="https://images.unsplash.com/photo-1527018601619-a508a2be00cd?auto=format&fit=crop&w=400&q=80" />
+                    <VocabCard uk="chips" us="fries" img="https://images.unsplash.com/photo-1576107232684-1279f390859f?auto=format&fit=crop&w=400&q=80" />
+                  </div>
+                  <p className="text-center font-semibold text-slate-500 mt-2">Click below to view comprehensive vocabulary tables by category:</p>
+                  <div className="grid grid-cols-4 gap-4 mt-auto pb-2">
+                    <TableButton 
+                      title="Table 5: Clothing" 
+                      headers={['Meaning', 'British English', 'American English']} 
+                      rows={[
+                        ['Legwear', 'trousers', 'pants'],
+                        ['Undergarments', 'pants / underpants', 'underwear / shorts'],
+                        ['Warm top', 'jumper', 'sweater'],
+                        ['Sleeveless top', 'waistcoat', 'vest'],
+                        ['Undergarment top', 'vest', 'undershirt / tank top'],
+                        ['Sport shoes', 'trainers', 'sneakers'],
+                        ['Rubber boots', 'wellingtons', 'rain boots'],
+                        ['Rain jacket', 'mackintosh / mac', 'raincoat'],
+                        ['Baby wear', 'nappy', 'diaper'],
+                        ['Workwear', 'dungarees', 'overalls'],
+                        ['Trouser support', 'braces', 'suspenders'],
+                        ['Hosiery', 'tights', 'pantyhose']
+                      ]} 
+                    />
+                    <TableButton 
+                      title="Table 6: Home" 
+                      headers={['Meaning', 'British English', 'American English']} 
+                      rows={[
+                        ['Dwelling', 'flat', 'apartment'],
+                        ['Floor level', 'ground floor', 'first floor'],
+                        ['Elevator', 'lift', 'elevator'],
+                        ['Water dispenser', 'tap', 'faucet'],
+                        ['Clothes storage', 'wardrobe', 'closet'],
+                        ['Kitchen appliance', 'cooker', 'stove'],
+                        ['Waste container', 'bin', 'trash can'],
+                        ['Waste', 'rubbish', 'garbage / trash'],
+                        ['Window cover', 'curtains', 'drapes'],
+                        ['Seating', 'sofa / settee', 'couch'],
+                        ['Outdoor area', 'garden', 'yard'],
+                        ['Hand light', 'torch', 'flashlight']
+                      ]} 
+                    />
+                    <TableButton 
+                      title="Table 7: Education" 
+                      headers={['Meaning', 'British English', 'American English']} 
+                      rows={[
+                        ['Govt school', 'state school', 'public school'],
+                        ['Private school', 'public school', 'private school'],
+                        ['Higher ed', 'university', 'college'],
+                        ['School leader', 'head teacher', 'principal'],
+                        ['Learner', 'pupil', 'student'],
+                        ['Score', 'marks', 'grades'],
+                        ['Mathematics', 'maths', 'math'],
+                        ['Pencil remover', 'rubber', 'eraser'],
+                        ['Time off', 'holidays', 'vacation'],
+                        ['Schedule', 'timetable', 'schedule']
+                      ]} 
+                    />
+                    <TableButton 
+                      title="Table 8: Everyday" 
+                      headers={['Meaning', 'British English', 'American English']} 
+                      rows={[
+                        ['Time off work', 'holiday', 'vacation'],
+                        ['Season', 'autumn', 'fall'],
+                        ['Motion picture', 'film', 'movie'],
+                        ['Movie theatre', 'cinema', 'movie theater'],
+                        ['Line of people', 'queue', 'line'],
+                        ['Mail service', 'post', 'mail'],
+                        ['Postal code', 'postcode', 'zip code'],
+                        ['Cell phone', 'mobile', 'cell phone'],
+                        ['Mother', 'mum', 'mom'],
+                        ['Retail outlet', 'shop', 'store'],
+                        ['Pharmacy', 'chemist\'s', 'drugstore / pharmacy']
+                      ]} 
+                    />
+                  </div>
+                </div>
+              )
+            },
+            {
+              id: 11, type: 'interactive', title: 'Beware of "False Friends"', content: (
+                <div className="flex flex-col items-center justify-center h-full text-center space-y-10">
+                  <div className="max-w-3xl relative">
+                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent rounded-2xl z-10"></div>
+                     <img src="https://images.unsplash.com/photo-1516585427167-9f4af9627e6c?auto=format&fit=crop&w=800&q=80" alt="Confusion" className="rounded-2xl shadow-xl h-48 object-cover w-full" />
+                     <h3 className="absolute bottom-6 left-0 right-0 text-white text-2xl font-bold z-20">Words that exist in both varieties but mean different things.</h3>
+                  </div>
+                  <div className="grid grid-cols-3 gap-6 w-full max-w-4xl">
+                    <InteractiveButton type="modal" title="Pants" data={{ uk: "Underwear", us: "Trousers", warning: "Using this incorrectly can cause embarrassment!" }} />
+                    <InteractiveButton type="modal" title="First Floor" data={{ uk: "Floor above ground level", us: "Ground-level floor", warning: "You might get lost in a building!" }} />
+                    <InteractiveButton type="modal" title="Public School" data={{ uk: "Prestigious private school", us: "Free state-funded school", warning: "Opposite meanings regarding fees." }} />
+                  </div>
+                </div>
+              )
+            },
+            {
+              id: 12, type: 'content', title: 'Grammar & Spelling', content: (
+                <div className="grid grid-cols-2 gap-10 h-full">
+                  <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 flex flex-col">
+                    <h3 className="text-2xl font-bold text-blue-800 mb-6 flex items-center">✍️ Grammar</h3>
+                    <ul className="space-y-4 text-base flex-grow">
+                      <li className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                        <strong className="block text-slate-800 mb-2">1. Present Perfect vs Past Simple</strong>
+                        <span className="text-blue-700 block text-sm">UK: "I've just seen him."</span>
+                        <span className="text-red-700 block text-sm">US: "I just saw him."</span>
+                      </li>
+                      <li className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                        <strong className="block text-slate-800 mb-2">2. Collective Nouns (Team, Staff)</strong>
+                        <span className="text-blue-700 block text-sm">UK: "The team are winning." (Plural)</span>
+                        <span className="text-red-700 block text-sm">US: "The team is winning." (Singular)</span>
+                      </li>
+                    </ul>
+                    <div className="mt-4">
+                      <TableButton 
+                        title="Table 10: Irregular Verbs" 
+                        headers={['Base form', 'British English (-t)', 'American English (-ed)'] } 
+                        rows={[
+                          ['learn', 'learnt', 'learned'],
+                          ['dream', 'dreamt', 'dreamed'],
+                          ['burn', 'burnt', 'burned'],
+                          ['spell', 'spelt', 'spelled'],
+                          ['spoil', 'spoilt', 'spoiled'],
+                          ['dive', 'dived', 'dove / dived'],
+                          ['sneak', 'sneaked', 'snuck / sneaked'],
+                          ['get (past part.)', 'got', 'gotten']
+                        ]} 
+                      />
+                    </div>
+                  </div>
+                  <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 flex flex-col">
+                    <h3 className="text-2xl font-bold text-red-800 mb-6 flex items-center">📝 Spelling</h3>
+                    <p className="text-slate-600 mb-6">Noah Webster simplified US spelling in 1828 to give the new nation its own distinct form. In almost every case the American form is the shorter or more phonetic one.</p>
+                    <div className="mt-auto">
+                        <TableButton 
+                          title="Table 11: Common Spelling Differences" 
+                          headers={['Pattern', 'British English', 'American English']} 
+                          rows={[
+                            ['-our / -or', 'colour, favour, honour', 'color, favor, honor'],
+                            ['-re / -er', 'centre, theatre, metre', 'center, theater, meter'],
+                            ['-ise / -ize', 'organise, realise, recognise', 'organize, realize, recognize'],
+                            ['-yse / -yze', 'analyse, paralyse', 'analyze, paralyze'],
+                            ['-ce / -se', 'defence, licence', 'defense, license'],
+                            ['double consonant', 'travelling, cancelled', 'traveling, canceled'],
+                            ['-ogue / -og', 'catalogue, dialogue', 'catalog, dialog'],
+                            ['single words', 'grey, tyre, kerb, plough', 'gray, tire, curb, plow'],
+                            ['single words', 'aluminium, programme', 'aluminum, program']
+                          ]} 
+                        />
+                    </div>
+                  </div>
+                </div>
+              )
+            },
+            {
+              id: 13, type: 'content', title: 'Numbers, Dates, and Measurements', content: (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4">
+                   <div className="bg-yellow-50 p-6 rounded-2xl border border-yellow-200 shadow-sm">
+                      <h3 className="text-2xl font-bold text-yellow-800 mb-4">📅 Formatting Dates</h3>
+                      <p className="text-slate-700 mb-4">This is a major difference that often causes confusion in international business.</p>
+                      <div className="bg-white p-4 rounded-xl shadow-sm text-center border border-yellow-100">
+                         <p className="text-3xl font-mono font-bold text-slate-800 mb-2">05/07/2026</p>
+                         <div className="flex justify-around mt-4">
+                           <div>
+                             <span className="block text-sm text-blue-600 font-bold uppercase">UK (DD/MM/YYYY)</span>
+                             <span className="text-lg font-semibold">5th of July</span>
+                           </div>
+                           <div>
+                             <span className="block text-sm text-red-600 font-bold uppercase">US (MM/DD/YYYY)</span>
+                             <span className="text-lg font-semibold">May 7th</span>
+                           </div>
+                         </div>
+                      </div>
+                   </div>
+                   <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 shadow-sm">
+                      <h3 className="text-xl font-bold text-slate-800 mb-4">⚖️ Measurements</h3>
+                      <p className="text-slate-700 mb-3"><strong className="text-blue-700">UK:</strong> Officially metric (Celsius, meters) but retains imperial for everyday use (miles, pints, stones).</p>
+                      <p className="text-slate-700"><strong className="text-red-700">US:</strong> Strictly uses customary units (Fahrenheit, miles, pounds, gallons).</p>
+                   </div>
+                </div>
+              )
+            },
+            {
+              id: 14, type: 'video', title: 'Media Overview', content: (
+                <div className="flex flex-col items-center justify-center h-full space-y-10 bg-slate-50 rounded-3xl p-10 border border-slate-200">
+                  <div className="text-center max-w-3xl">
+                    <h3 className="text-3xl font-bold text-slate-800 mb-4">Explore the Differences</h3>
+                    <p className="text-lg text-slate-600">Watch these local videos from your computer to test your knowledge and hear the real-world differences between British and American English.</p>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl">
+                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow flex flex-col items-center text-center">
+                      <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-4">
+                        <span className="text-2xl">🗣️</span>
+                      </div>
+                      <h4 className="font-bold text-lg text-slate-800 mb-2">Pronunciation Challenge</h4>
+                      <p className="text-sm text-slate-500 mb-6 flex-grow">Can you tell the difference in accent? Watch this compilation of words pronounced differently.</p>
+                      <InteractiveButton type="video" videoId="https://raw.githubusercontent.com/ungdungkhoahochiendai-hue/briengl/main/1111.mp4" title="Watch Challenge" className="w-full text-sm py-3 bg-blue-600 hover:bg-blue-700 hover:shadow-blue-500/50" />
+                    </div>
+
+                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow flex flex-col items-center text-center">
+                      <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-4">
+                        <span className="text-2xl">📝</span>
+                      </div>
+                      <h4 className="font-bold text-lg text-slate-800 mb-2">Vocabulary Test</h4>
+                      <p className="text-sm text-slate-500 mb-6 flex-grow">Lorry or Truck? Pavement or Sidewalk? Test your vocabulary knowledge.</p>
+                      <InteractiveButton type="video" videoId="https://raw.githubusercontent.com/ungdungkhoahochiendai-hue/briengl/main/2222.mp4" title="Take the Test" className="w-full text-sm py-3 bg-red-600 hover:bg-red-700 hover:shadow-red-500/50" />
+                    </div>
+
+                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow flex flex-col items-center text-center">
+                      <div className="w-16 h-16 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center mb-4">
+                        <span className="text-2xl">🎬</span>
+                      </div>
+                      <h4 className="font-bold text-lg text-slate-800 mb-2">Pop Culture Clash</h4>
+                      <p className="text-sm text-slate-500 mb-6 flex-grow">See how British and American actors struggle with each other's slang in interviews.</p>
+                      <InteractiveButton type="video" videoId="https://raw.githubusercontent.com/ungdungkhoahochiendai-hue/briengl/main/3333.mp4" title="Watch Interviews" className="w-full text-sm py-3 bg-purple-600 hover:bg-purple-700 hover:shadow-purple-500/50" />
+                    </div>
+                  </div>
+                </div>
+              )
+            },
+            {
+              id: 17, type: 'cover', title: 'Thank You!', subtitle: 'Both varieties are correct and mutually intelligible. Choose one and be consistent!', authors: ['Q&A Session'], classInfo: '', instructor: ''
+            }
+          ], []);
+
+          const totalSlides = presentationData.length;
+          const slide = presentationData[currentSlide];
+
+          const nextSlide = () => setCurrentSlide(prev => Math.min(prev + 1, totalSlides - 1));
+          const prevSlide = () => setCurrentSlide(prev => Math.max(prev - 1, 0));
+
+          const renderSlideContent = () => {
+            if (slide.type === 'cover') {
+              return (
+                <div className="flex flex-col items-center justify-center h-full text-center px-12 bg-slate-50">
+                  <div className="bg-white p-10 rounded-3xl shadow-sm border border-slate-200 max-w-4xl w-full">
+                    <h1 className="text-5xl font-extrabold text-slate-800 mb-6 leading-tight">{slide.title}</h1>
+                    <h2 className="text-2xl text-slate-600 font-medium mb-12">{slide.subtitle}</h2>
+                    {slide.authors[0] !== 'Q&A Session' ? (
+                      <div className="grid grid-cols-2 gap-8 text-left bg-slate-50 p-8 rounded-2xl border border-slate-100">
+                        <div>
+                          <p className="text-slate-400 text-sm uppercase tracking-widest font-bold mb-2">Prepared by</p>
+                          <ul className="text-lg font-semibold text-slate-700 space-y-1">
+                            {slide.authors.map((author, i) => <li key={i}>{i+1}. {author}</li>)}
+                          </ul>
+                        </div>
+                        <div>
+                           <p className="text-slate-400 text-sm uppercase tracking-widest font-bold mb-1">Class</p>
+                           <p className="text-lg font-semibold text-slate-700">{slide.classInfo}</p>
+                           <p className="text-slate-400 text-sm uppercase tracking-widest font-bold mb-1 mt-4">Instructor</p>
+                           <p className="text-lg font-semibold text-slate-700">{slide.instructor}</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center space-y-5">
+                        <a 
+                          href="https://wayground.com/activity/admin/quiz/6a51719ef827c3acac0f3511" 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="inline-block bg-slate-800 hover:bg-slate-700 text-white px-10 py-4 rounded-full text-2xl font-bold transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-1 cursor-pointer"
+                        >
+                          Q&A Session
+                        </a>
+                        <button 
+                          onClick={() => openModal({ type: 'references', title: 'References', data: referencesList })}
+                          className="inline-flex items-center gap-2 bg-white text-slate-700 border-2 border-slate-200 hover:border-slate-400 hover:bg-slate-50 px-8 py-3 rounded-full text-lg font-bold transition-all shadow-sm hover:shadow-md cursor-pointer"
+                        >
+                          <IconBook /> View References
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            }
+
+            return (
+              <div className="h-full flex flex-col p-8 bg-white">
+                <h2 className="text-3xl font-extrabold text-slate-800 mb-6 pb-3 border-b border-slate-200 shrink-0">{slide.title}</h2>
+                <div className="flex-grow flex flex-col relative text-slate-700 overflow-hidden">{slide.content}</div>
+              </div>
+            );
+          };
+
+          return (
+            <ModalContext.Provider value={openModal}>
+              <div className="h-screen w-full bg-slate-100 flex flex-col md:flex-row font-sans overflow-hidden">
+                
+                <div className={`${sidebarOpen ? 'w-80' : 'w-0'} transition-all duration-300 bg-white border-r border-slate-200 flex flex-col h-full flex-shrink-0 overflow-hidden`}>
+                  <div className="p-6 border-b border-slate-100 flex items-center space-x-3 bg-slate-50">
+                     <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold text-xl">E</div>
+                     <h1 className="font-bold text-slate-800 text-base leading-tight">Presentation<br/><span className="text-slate-500 text-xs font-normal">Interactive App</span></h1>
+                  </div>
+                  <div className="flex-1 overflow-y-auto p-4 space-y-1 custom-scrollbar">
+                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 px-2">Table of Contents</div>
+                    {presentationData.map((s, i) => (
+                      <button
+                        key={s.id} onClick={() => setCurrentSlide(i)}
+                        className={`w-full text-left px-4 py-3 rounded-xl transition-all flex items-center group ${currentSlide === i ? 'bg-blue-50 text-blue-700 font-semibold border border-blue-100' : 'text-slate-600 hover:bg-slate-50'}`}
+                      >
+                        <span className={`mr-3 ${currentSlide === i ? 'text-blue-600' : 'text-slate-400'}`}>
+                          {s.type === 'video' ? <IconVideo /> : s.type === 'cover' ? <IconInfo /> : s.type === 'quiz' ? <IconCheck /> : s.type === 'interactive' ? <IconTable /> : <IconInfo />}
+                        </span>
+                        <span className="text-sm truncate w-full">{s.title}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex-1 flex flex-col h-full relative">
+                  
+                  <div className="h-14 bg-white border-b border-slate-200 flex items-center px-4 justify-between shrink-0">
+                    <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 text-slate-500 hover:bg-slate-100 rounded-lg">
+                      <IconMenu />
+                    </button>
+                    <span className="font-semibold text-slate-600 text-sm">Slide {currentSlide + 1} of {totalSlides}</span>
+                  </div>
+
+                  <div className="flex-1 bg-slate-100 p-4 md:p-8 flex items-center justify-center overflow-hidden">
+                     <div className="w-full max-w-[1100px] aspect-[16/9] bg-white rounded-2xl shadow-xl overflow-hidden relative ring-1 ring-slate-900/5">
+                        <div key={currentSlide} className="absolute inset-0 animate-fadeInSlide">
+                          {renderSlideContent()}
+                        </div>
+                     </div>
+                  </div>
+
+                  <div className="bg-white border-t border-slate-200 px-6 py-4 flex justify-between shrink-0">
+                     <button onClick={prevSlide} disabled={currentSlide === 0} className={`px-6 py-2 rounded-lg font-semibold transition-all ${currentSlide === 0 ? 'bg-slate-50 text-slate-300' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}>Previous</button>
+                     <button onClick={nextSlide} disabled={currentSlide === totalSlides - 1} className={`px-8 py-2 rounded-lg font-semibold transition-all ${currentSlide === totalSlides - 1 ? 'bg-slate-50 text-slate-300' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-md'}`}>Next Slide</button>
+                  </div>
+                  
+                  <div className="h-1 bg-slate-200 w-full"><div className="h-full bg-blue-600 transition-all duration-500" style={{ width: `${((currentSlide + 1) / totalSlides) * 100}%` }}></div></div>
+                </div>
+              </div>
+
+              <Modal isOpen={modalState.isOpen} onClose={closeModal} content={modalState.content} />
+            </ModalContext.Provider>
+          );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<PresentationApp />);
+    </script>
+</body>
+</html>
