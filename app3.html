@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>British or American? · Spot the specimen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#0a0d13; --stage:#111724; --sunk:#0d1220;
+    --edge:#1f2937; --edge2:#2b3648;
+    --chalk:#e9eef7; --dim:#78849b; --faint:#4b5568;
+    --uk:#5aa2ff; --us:#ff616e;
+    --ok:#3ddc97; --miss:#f0b429;
+    --mono:'IBM Plex Mono',ui-monospace,Consolas,monospace;
+    --sans:'IBM Plex Sans',system-ui,'Segoe UI',sans-serif;
+    --display:'Bricolage Grotesque','IBM Plex Sans',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--void);color:var(--chalk);font-family:var(--sans);min-height:100vh;padding:20px;display:flex;justify-content:center;align-items:center}
+  .game{width:100%;max-width:760px;background:var(--stage);border:1px solid var(--edge);border-radius:14px;overflow:hidden}
+
+  .masthead{display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--edge);font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint)}
+  .masthead b{color:var(--uk);font-weight:500}
+  .masthead i{color:var(--us);font-style:normal}
+  .grow{flex:1}
+  .pts{position:relative;color:var(--chalk)}
+  .pts.pop{animation:pop .3s ease}
+  @keyframes pop{50%{transform:scale(1.22)}}
+  .float{position:absolute;left:50%;top:-2px;transform:translateX(-50%);color:var(--ok);pointer-events:none;animation:rise .9s ease-out forwards}
+  @keyframes rise{to{transform:translate(-50%,-26px);opacity:0}}
+  .mute{background:none;border:1px solid var(--edge);color:var(--faint);border-radius:5px;width:26px;height:22px;cursor:pointer;font-size:10px}
+  .mute:hover{color:var(--chalk)}
+
+  .screen{display:none;padding:clamp(20px,4vw,34px)}
+  .screen.on{display:block}
+
+  /* ── start ── */
+  .kick{font-family:var(--mono);font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--dim);margin-bottom:14px}
+  h1{font-family:var(--display);font-size:clamp(32px,6vw,54px);font-weight:700;line-height:1.03;letter-spacing:-.025em;margin-bottom:14px}
+  h1 .b{color:var(--uk)} h1 .a{color:var(--us)}
+  .lede{color:var(--dim);font-size:14.5px;line-height:1.65;max-width:52ch}
+  .lede strong{color:var(--chalk);font-weight:500}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin:22px 0 18px}
+  .chips button{background:none;border:1px solid var(--edge);color:var(--dim);border-radius:999px;padding:6px 13px;cursor:pointer;font-family:var(--sans);font-size:12.5px}
+  .chips button span{font-family:var(--mono);font-size:10px;color:var(--faint);margin-left:5px}
+  .chips button.on{border-color:var(--chalk);color:var(--chalk)}
+  .go{background:var(--chalk);color:#0a0d13;border:0;font-family:var(--sans);font-weight:600;font-size:15px;padding:12px 30px;border-radius:999px;cursor:pointer}
+  .keys{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-top:16px}
+
+  /* ── play ── */
+  .clock{height:3px;background:#1a2130;border-radius:2px;overflow:hidden;margin-bottom:clamp(20px,4vw,32px)}
+  .clock i{display:block;height:100%;width:100%;background:var(--dim)}
+  .clock i.low{background:var(--miss)}
+  .cat{text-align:center;font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--faint);margin-bottom:14px}
+  .spec{
+    text-align:center;font-family:var(--display);font-weight:700;
+    font-size:clamp(30px,6.4vw,60px);line-height:1.15;letter-spacing:-.03em;
+    min-height:clamp(74px,13vw,116px);display:flex;align-items:center;justify-content:center;
+  }
+  .spec.sent{font-size:clamp(22px,4vw,38px)}
+  .spec.shake{animation:shake .34s}
+  @keyframes shake{25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+  .stamps{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:clamp(20px,4vw,30px)}
+  .stamp{
+    background:var(--sunk);border:1px solid var(--c);color:var(--c);
+    font-family:var(--display);font-weight:700;font-size:clamp(16px,2.6vw,22px);letter-spacing:-.01em;
+    padding:clamp(14px,2.6vw,20px);border-radius:11px;cursor:pointer;transition:transform .1s,background .15s;
+  }
+  .stamp.b{--c:var(--uk)} .stamp.a{--c:var(--us)}
+  .stamp em{display:block;font-family:var(--mono);font-style:normal;font-size:9px;letter-spacing:.2em;color:var(--faint);margin-top:5px}
+  .stamp:hover{background:#161d2b}
+  .stamp:active{transform:scale(.97)}
+  .stamp:disabled{cursor:default;opacity:.35}
+  .streak{text-align:center;margin-top:16px;font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);min-height:14px}
+  .streak b{color:var(--ok);font-weight:500}
+
+  /* ── verdict ── */
+  .verdict{display:none;text-align:center}
+  .verdict.on{display:block;animation:fade .2s ease}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  .mark{font-family:var(--display);font-size:13px;font-weight:600;letter-spacing:.02em;margin-bottom:10px}
+  .mark.good{color:var(--ok)} .mark.bad{color:var(--miss)}
+  .verdict .side{font-family:var(--display);font-weight:700;font-size:clamp(24px,4vw,34px);letter-spacing:-.02em}
+  .verdict .side.b{color:var(--uk)} .verdict .side.a{color:var(--us)}
+  .twin{margin-top:12px;font-size:14px;color:var(--dim)}
+  .twin b{font-family:var(--display);font-size:16px}
+  .twin b.b{color:var(--uk)} .twin b.a{color:var(--us)}
+  .pattern{font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);margin-top:12px}
+  .note{max-width:46ch;margin:14px auto 0;font-size:12.5px;line-height:1.6;color:var(--dim);border-top:1px solid #1a2130;padding-top:12px}
+  .tap{font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:#333c4d;margin-top:16px}
+
+  /* ── over ── */
+  .final{font-family:var(--display);font-size:clamp(44px,9vw,72px);font-weight:700;letter-spacing:-.03em;line-height:1}
+  .subs{display:flex;gap:18px;flex-wrap:wrap;margin:12px 0 22px;font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+  .subs b{color:var(--chalk);font-weight:500}
+  .missed{border-top:1px solid #1a2130;max-height:230px;overflow:auto;margin-bottom:20px}
+  .missed div{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:9px 2px;border-bottom:1px solid #1a2130;font-size:14px}
+  .missed .s{font-family:var(--display);font-weight:600}
+  .missed .s.b{color:var(--uk)} .missed .s.a{color:var(--us)}
+  .missed em{font-family:var(--mono);font-style:normal;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+
+  @media (max-width:520px){ .stamps{grid-template-columns:1fr} .subs{gap:12px} }
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+  :focus-visible{outline:2px solid var(--chalk);outline-offset:2px}
+</style>
+</head>
+<body>
+
+<div class="game">
+  <header class="masthead">
+    <span><b>British</b> or <i>American</i>?</span>
+    <span class="grow"></span>
+    <span id="prog" hidden>00 / 20</span>
+    <span class="pts" id="pts" hidden>0</span>
+    <button class="mute" id="mute" title="Sound">♪</button>
+  </header>
+
+  <section class="screen on" id="sStart">
+    <div class="kick">64 specimens · 20 per round</div>
+    <h1>One of them is<br><span class="b">British</span>. One is <span class="a">American</span>.</h1>
+    <p class="lede">A word comes up. Say which side of the Atlantic wrote it, before the bar runs out. <strong>When you're stuck:</strong> Webster trimmed American spelling in 1828, so the shorter, more phonetic form is almost always the American one.</p>
+    <div class="chips" id="chips"></div>
+    <button class="go" id="go">Start</button>
+    <p class="keys">← British · → American · space to skip ahead</p>
+  </section>
+
+  <section class="screen" id="sPlay">
+    <div class="clock"><i id="bar"></i></div>
+    <div id="ask">
+      <div class="cat" id="cat"></div>
+      <div class="spec" id="spec"></div>
+    </div>
+    <div class="verdict" id="verdict"></div>
+    <div class="stamps">
+      <button class="stamp b" id="bUK">British<em>← left</em></button>
+      <button class="stamp a" id="bUS">American<em>right →</em></button>
+    </div>
+    <div class="streak" id="streak"></div>
+  </section>
+
+  <section class="screen" id="sOver">
+    <div class="kick">Round over</div>
+    <div class="final" id="fScore">0</div>
+    <div class="subs" id="fSubs"></div>
+    <div class="missed" id="fMissed"></div>
+    <button class="go" id="again">Play again</button>
+  </section>
+</div>
+
+<script>
+/* ── Table 11: spelling ── */
+const SPELL = [
+  {tag:'-our / -or', uk:['colour','favour','honour'], us:['color','favor','honor']},
+  {tag:'-re / -er', uk:['centre','theatre','metre'], us:['center','theater','meter']},
+  {tag:'-ise / -ize', uk:['organise','realise','recognise'], us:['organize','realize','recognize'],
+   note:'Britain accepts the -ize spelling as well — Oxford prefers it — but -ise is the everyday British form. The -yse verbs below are different: Britain never writes analyze.'},
+  {tag:'-yse / -yze', uk:['analyse','paralyse'], us:['analyze','paralyze']},
+  {tag:'-ce / -se', uk:['defence','licence'], us:['defense','license'],
+   note:'In Britain, licence is the noun and license the verb. America spells both license.'},
+  {tag:'double consonant', uk:['travelling','cancelled'], us:['traveling','canceled']},
+  {tag:'-ogue / -og', uk:['catalogue','dialogue'], us:['catalog','dialog']},
+  {tag:'single words', uk:['grey','tyre','kerb','plough'], us:['gray','tire','curb','plow']},
+  {tag:'single words', uk:['aluminium','programme'], us:['aluminum','program']}
+];
+
+/* ── Table 10: irregular verbs ── */
+const EDT = 'Britain writes both learnt and learned; the -t form is the one America never uses.';
+const VERBS = [
+  {tag:'learn', uk:'learnt', us:'learned', note:EDT},
+  {tag:'dream', uk:'dreamt', us:'dreamed', note:EDT},
+  {tag:'burn', uk:'burnt', us:'burned', note:EDT},
+  {tag:'spell', uk:'spelt', us:'spelled', note:EDT},
+  {tag:'spoil', uk:'spoilt', us:'spoiled', note:EDT},
+  {tag:'dive', uk:'dived', us:'dove', only:'us', note:'Dived is the British past tense, and Americans use it too. Dove is the American extra.'},
+  {tag:'sneak', uk:'sneaked', us:'snuck', only:'us', note:'Sneaked is fine on both sides. Snuck is the American extra.'},
+  {tag:'get · past participle', uk:'got', us:'gotten',
+   note:'Americans keep got for possession — I\'ve got a car — but use gotten for the action: I\'ve gotten a car.'}
+];
+
+/* ── grammar ── */
+const GRAM = [
+  {tag:'present perfect vs past simple', uk:'I\'ve just seen him.', us:'I just saw him.',
+   note:'Britain reaches for the present perfect with just, already and yet. America is happy with the past simple. It is a lean, not a law — both are heard on both sides.'},
+  {tag:'collective nouns', uk:'The team are winning.', us:'The team is winning.',
+   note:'Britain treats a group as the people inside it, so the verb turns plural. America treats it as one unit.'}
+];
+
+/* ── build the specimen pool ── */
+const POOL = [];
+const add = (t, side, twin, cat, tag, note) => POOL.push({t, side, twin, cat, tag, note});
+SPELL.forEach(g => g.uk.forEach((w,i) => {
+  add(w, 'uk', g.us[i], 'Spelling', g.tag, g.note);
+  add(g.us[i], 'us', w, 'Spelling', g.tag, g.note);
+}));
+VERBS.forEach(v => {
+  if(v.only !== 'us') add(v.uk, 'uk', v.us, 'Verbs', v.tag, v.note);
+  if(v.only !== 'uk') add(v.us, 'us', v.uk, 'Verbs', v.tag, v.note);
+});
+GRAM.forEach(g => {
+  add(g.uk, 'uk', g.us, 'Grammar', g.tag, g.note);
+  add(g.us, 'us', g.uk, 'Grammar', g.tag, g.note);
+});
+
+const $ = id => document.getElementById(id);
+const CATS = ['All','Spelling','Verbs','Grammar'];
+let cat = 'All', deck = [], pos = 0, score = 0, right = 0, streak = 0, best = 0, missed = [], muted = false;
+let clock = null, lowT = null, hold = null, answered = false, started = 0, span = 0;
+
+/* ── sound ── */
+let ac;
+function beep(ok){
+  if(muted) return;
+  try{
+    ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.connect(g); g.connect(ac.destination);
+    o.type = ok ? 'triangle' : 'sine';
+    const t = ac.currentTime;
+    if(ok){ o.frequency.setValueAtTime(760, t); o.frequency.exponentialRampToValueAtTime(1240, t + .09); }
+    else { o.frequency.setValueAtTime(200, t); o.frequency.exponentialRampToValueAtTime(90, t + .22); }
+    g.gain.setValueAtTime(.16, t);
+    g.gain.exponentialRampToValueAtTime(.001, t + (ok ? .2 : .32));
+    o.start(t); o.stop(t + (ok ? .22 : .34));
+  }catch(e){}
+}
+$('mute').onclick = () => { muted = !muted; $('mute').textContent = muted ? '✕' : '♪'; $('mute').style.color = muted ? '' : 'var(--chalk)'; };
+
+/* ── chips ── */
+function chips(){
+  $('chips').innerHTML = CATS.map(c => {
+    const n = c === 'All' ? POOL.length : POOL.filter(p => p.cat === c).length;
+    return `<button data-c="${c}" class="${c === cat ? 'on' : ''}">${c}<span>${n}</span></button>`;
+  }).join('');
+}
+$('chips').onclick = e => { const b = e.target.closest('button'); if(!b) return; cat = b.dataset.c; chips(); };
+chips();
+
+/* ── round ── */
+const screen = id => ['sStart','sPlay','sOver'].forEach(s => $(s).classList.toggle('on', s === id));
+
+function start(){
+  const pot = POOL.filter(p => cat === 'All' || p.cat === cat).sort(() => Math.random() - .5);
+  deck = pot.slice(0, Math.min(20, pot.length));
+  pos = 0; score = 0; right = 0; streak = 0; missed = [];
+  $('prog').hidden = false; $('pts').hidden = false;
+  screen('sPlay'); ask();
+}
+function ask(){
+  if(pos >= deck.length) return over();
+  const it = deck[pos];
+  answered = false;
+  $('ask').style.display = ''; $('verdict').classList.remove('on');
+  $('cat').textContent = it.cat === 'Verbs' ? 'Irregular verb' : it.cat;
+  $('spec').textContent = it.t;
+  $('spec').className = 'spec' + (it.t.includes(' ') ? ' sent' : '');
+  $('bUK').disabled = $('bUS').disabled = false;
+  $('prog').textContent = String(pos + 1).padStart(2,'0') + ' / ' + deck.length;
+  $('streak').innerHTML = streak > 1 ? `streak <b>${streak}</b>${mult() > 1 ? ' · ×' + mult() : ''}` : '';
+  span = it.t.includes(' ') ? 7000 : 5000;
+  started = Date.now();
+  const bar = $('bar');
+  bar.classList.remove('low');
+  bar.style.transition = 'none'; bar.style.width = '100%';
+  requestAnimationFrame(() => {
+    bar.style.transition = `width ${span}ms linear`;
+    bar.style.width = '0%';
+  });
+  clearTimeout(clock); clearTimeout(lowT);
+  lowT = setTimeout(() => bar.classList.add('low'), span - 1600);
+  clock = setTimeout(() => answer(null), span);
+}
+const mult = () => streak >= 6 ? 3 : streak >= 3 ? 2 : 1;
+
+function answer(side){
+  if(answered) return;
+  answered = true;
+  clearTimeout(clock); clearTimeout(lowT);
+  const bar = $('bar');
+  bar.style.transition = 'none';
+  bar.style.width = getComputedStyle(bar).width;
+  const it = deck[pos];
+  const ok = side === it.side;
+  $('bUK').disabled = $('bUS').disabled = true;
+  beep(ok);
+  if(ok){
+    right++; streak++;
+    const speed = Math.max(0, Math.round(100 * (1 - (Date.now() - started) / span)));
+    const gain = (100 + speed) * mult();
+    score += gain;
+    $('pts').textContent = score;
+    $('pts').classList.add('pop');
+    setTimeout(() => $('pts').classList.remove('pop'), 300);
+    const f = document.createElement('span');
+    f.className = 'float'; f.textContent = '+' + gain;
+    $('pts').appendChild(f);
+    setTimeout(() => f.remove(), 900);
+  } else {
+    streak = 0;
+    missed.push({...it, said: side});
+    $('spec').classList.add('shake');
+  }
+  const name = s => s === 'uk' ? 'British' : 'American';
+  const cls  = s => s === 'uk' ? 'b' : 'a';
+  $('ask').style.display = 'none';
+  $('verdict').innerHTML = `
+    <div class="mark ${ok ? 'good' : 'bad'}">${ok ? '✓ Correct' : side === null ? '✕ Out of time' : '✕ You said ' + name(side)}</div>
+    <div class="side ${cls(it.side)}">${it.t}</div>
+    <div class="side ${cls(it.side)}" style="font-size:12px;letter-spacing:.2em;text-transform:uppercase;font-family:var(--mono);margin-top:6px">${name(it.side)}</div>
+    <div class="twin">the ${name(it.side === 'uk' ? 'us' : 'uk')} form is <b class="${cls(it.side === 'uk' ? 'us' : 'uk')}">${it.twin}</b></div>
+    <div class="pattern">${it.cat} · ${it.tag}</div>
+    ${it.note ? `<div class="note">${it.note}</div>` : ''}
+    <div class="tap">space or click for the next one</div>`;
+  $('verdict').classList.add('on');
+  $('streak').innerHTML = streak > 1 ? `streak <b>${streak}</b>${mult() > 1 ? ' · ×' + mult() : ''}` : '';
+  clearTimeout(hold);
+  hold = setTimeout(next, ok ? 1400 : 3400);
+}
+function next(){
+  clearTimeout(hold);
+  $('spec').classList.remove('shake');
+  pos++; ask();
+}
+function over(){
+  $('prog').hidden = true;
+  best = Math.max(best, score);
+  screen('sOver');
+  $('fScore').textContent = score;
+  $('fSubs').innerHTML = `<span><b>${right}</b> of ${deck.length} right</span>
+    <span>accuracy <b>${Math.round(right / deck.length * 100)}%</b></span>
+    <span>best today <b>${best}</b></span>`;
+  $('fMissed').innerHTML = missed.length
+    ? missed.map(m => `<div>
+        <span class="s ${m.side === 'uk' ? 'b' : 'a'}">${m.t}</span>
+        <em>${m.side === 'uk' ? 'British' : 'American'} · twin: ${m.twin}</em>
+      </div>`).join('')
+    : '<div style="padding:12px 2px;color:var(--ok);font-size:14px">Clean round. Nothing missed.</div>';
+}
+
+$('go').onclick = start;
+$('again').onclick = () => screen('sStart');
+$('bUK').onclick = () => answer('uk');
+$('bUS').onclick = () => answer('us');
+$('verdict').onclick = () => { if(answered) next(); };
+addEventListener('keydown', e => {
+  if($('sStart').classList.contains('on') && (e.code === 'Space' || e.code === 'Enter')){ e.preventDefault(); return start(); }
+  if($('sOver').classList.contains('on') && (e.code === 'Space' || e.code === 'Enter')){ e.preventDefault(); return start(); }
+  if(!$('sPlay').classList.contains('on')) return;
+  if(e.code === 'ArrowLeft'){ e.preventDefault(); answer('uk'); }
+  if(e.code === 'ArrowRight'){ e.preventDefault(); answer('us'); }
+  if(e.code === 'Space'){ e.preventDefault(); if(answered) next(); }
+});
+</script>
+</body>
+</html>

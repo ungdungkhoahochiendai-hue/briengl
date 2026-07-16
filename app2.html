@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>British ⇄ American · 45 word pairs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#0a0d13; --stage:#111724; --sunk:#0d1220;
+    --edge:#1f2937; --edge2:#2b3648;
+    --chalk:#e9eef7; --dim:#78849b; --faint:#4b5568;
+    --uk:#5aa2ff; --us:#ff616e;
+    --ok:#3ddc97; --warn:#f0b429;
+    --mono:'IBM Plex Mono',ui-monospace,Consolas,monospace;
+    --sans:'IBM Plex Sans',system-ui,'Segoe UI',sans-serif;
+    --display:'Bricolage Grotesque','IBM Plex Sans',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--void);color:var(--chalk);font-family:var(--sans);min-height:100vh;padding:20px;display:flex;justify-content:center}
+  .app{width:100%;max-width:940px;background:var(--stage);border:1px solid var(--edge);border-radius:14px;overflow:hidden;align-self:start}
+
+  /* ── masthead ── */
+  .masthead{display:flex;align-items:center;gap:14px;padding:12px 16px;border-bottom:1px solid var(--edge);flex-wrap:wrap}
+  .brand{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+  .brand b{color:var(--uk);font-weight:500}
+  .brand i{color:var(--us);font-style:normal}
+  .grow{flex:1}
+  .tabs{display:flex;gap:3px;background:var(--sunk);border:1px solid var(--edge);border-radius:8px;padding:3px}
+  .tabs button{background:none;border:0;color:var(--dim);font-family:var(--sans);font-size:12.5px;padding:6px 14px;border-radius:6px;cursor:pointer}
+  .tabs button.on{background:var(--chalk);color:#0a0d13;font-weight:600}
+
+  .panel{display:none;padding:18px 16px}
+  .panel.on{display:block}
+
+  /* ── search ── */
+  .searchrow{position:relative;margin-bottom:14px}
+  #q{
+    width:100%;background:var(--sunk);border:1px solid var(--edge2);color:var(--chalk);
+    font-family:var(--sans);font-size:15px;padding:12px 40px 12px 14px;border-radius:9px;
+  }
+  #q::placeholder{color:var(--faint)}
+  #q:focus{outline:none;border-color:var(--uk)}
+  #clear{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:0;color:var(--faint);font-size:16px;cursor:pointer;padding:6px 8px}
+  #clear:hover{color:var(--chalk)}
+
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+  .chips button{
+    background:none;border:1px solid var(--edge);color:var(--dim);border-radius:999px;
+    padding:5px 12px;cursor:pointer;font-family:var(--sans);font-size:12px;
+  }
+  .chips button span{font-family:var(--mono);font-size:10px;color:var(--faint);margin-left:5px}
+  .chips button.on{border-color:var(--chalk);color:var(--chalk)}
+  .chips button.on span{color:var(--dim)}
+
+  /* ── table ── */
+  .thead,.row{display:grid;grid-template-columns:1.05fr 1.15fr 1.15fr;gap:12px;align-items:center}
+  .thead{
+    padding:0 10px 8px;font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--faint);
+  }
+  .thead .b{color:var(--uk)} .thead .a{color:var(--us)}
+  .item{border-top:1px solid #1a2130}
+  .row{padding:9px 10px}
+  .item:hover .row{background:#161d2b}
+  .m{font-size:12.5px;color:var(--dim)}
+  .w{display:flex;align-items:center;gap:7px;min-width:0}
+  .say{
+    background:none;border:0;padding:0;cursor:pointer;text-align:left;
+    font-family:var(--display);font-weight:600;font-size:15.5px;letter-spacing:-.01em;
+    border-bottom:1px dotted transparent;
+  }
+  .w.b .say{color:var(--uk)} .w.a .say{color:var(--us)}
+  .say:hover{border-bottom-color:currentColor}
+  .say.speaking{text-shadow:0 0 22px currentColor}
+  .flag{
+    background:none;border:1px solid var(--warn);color:var(--warn);border-radius:5px;
+    width:17px;height:17px;font-size:10px;line-height:1;cursor:pointer;flex:none;
+  }
+  .flag:hover,.flag.on{background:var(--warn);color:#0a0d13}
+  .mini{display:none;font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+
+  /* ── trap ── */
+  .trapbox{margin:0 10px 12px;border:1px solid #3a3320;border-radius:10px;overflow:hidden;background:#15130c}
+  .tt{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--warn);padding:11px 14px 0;text-align:center}
+  .tw{font-family:var(--display);font-weight:700;font-size:26px;text-align:center;padding:6px 0 13px;letter-spacing:-.02em}
+  .tsplit{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#3a3320}
+  .tside{background:var(--sunk);padding:12px 14px}
+  .tside i{display:block;font-family:var(--mono);font-style:normal;font-size:9px;letter-spacing:.18em;text-transform:uppercase;margin-bottom:6px}
+  .tside.b i{color:var(--uk)} .tside.a i{color:var(--us)}
+  .tside span{font-size:13px;color:var(--chalk);line-height:1.5}
+  .empty{padding:26px 10px;color:var(--dim);font-size:14px;text-align:center}
+
+  /* ── practice ── */
+  .setup{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+  .seg{display:flex;gap:3px;background:var(--sunk);border:1px solid var(--edge);border-radius:8px;padding:3px}
+  .seg button{background:none;border:0;color:var(--dim);font-family:var(--sans);font-size:12px;padding:6px 11px;border-radius:6px;cursor:pointer}
+  .seg button.on{background:#233049;color:var(--chalk)}
+  .btn{background:none;border:1px solid var(--edge);color:var(--chalk);border-radius:8px;padding:8px 14px;cursor:pointer;font-family:var(--sans);font-size:13px}
+  .btn:hover{border-color:var(--edge2);background:#161d2b}
+  .btn.main{background:var(--chalk);color:#0a0d13;border-color:var(--chalk);font-weight:600}
+  .btn:disabled{opacity:.4;cursor:default}
+
+  .quiz{border:1px solid var(--edge);border-radius:12px;padding:clamp(18px,4vw,30px);background:var(--sunk);text-align:center}
+  .qmeta{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);margin-bottom:20px}
+  .qmean{font-size:13px;color:var(--dim);margin-bottom:6px}
+  .qword{font-family:var(--display);font-weight:700;font-size:clamp(28px,5vw,42px);letter-spacing:-.02em;background:none;border:0;cursor:pointer;padding:0}
+  .qtag{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;margin-bottom:8px}
+  .b .qtag,.qtag.b{color:var(--uk)} .a .qtag,.qtag.a{color:var(--us)}
+  .qword.b{color:var(--uk)} .qword.a{color:var(--us)}
+  .qarrow{color:var(--edge2);font-size:18px;margin:16px 0}
+  #ans{
+    width:min(320px,100%);background:var(--stage);border:1px solid var(--edge2);color:var(--chalk);
+    font-family:var(--display);font-weight:600;font-size:20px;text-align:center;
+    padding:11px 14px;border-radius:9px;
+  }
+  #ans:focus{outline:none;border-color:var(--chalk)}
+  #ans.good{border-color:var(--ok);color:var(--ok)}
+  #ans.bad{border-color:var(--us)}
+  .qbtns{display:flex;gap:8px;justify-content:center;margin-top:16px}
+  .verdict{min-height:22px;margin-top:14px;font-size:13.5px;color:var(--dim);line-height:1.5}
+  .verdict b{color:var(--chalk)}
+  .verdict.good{color:var(--ok)}
+  .verdict.bad{color:var(--us)}
+  .verdict.nudge{color:var(--warn)}
+  .score{display:flex;gap:16px;justify-content:center;margin-top:14px;font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+  .score b{color:var(--chalk);font-weight:500}
+  .done{text-align:center}
+  .done h3{font-family:var(--display);font-size:30px;font-weight:700;letter-spacing:-.02em;margin-bottom:8px}
+  .done p{color:var(--dim);font-size:14px;margin-bottom:18px}
+  .missed{text-align:left;max-width:420px;margin:0 auto 20px;border-top:1px solid #1a2130}
+  .missed div{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;padding:8px 4px;border-bottom:1px solid #1a2130;font-size:13.5px}
+  .missed .u{color:var(--uk)} .missed .a{color:var(--us);text-align:right} .missed em{color:var(--faint);font-style:normal;font-size:11px}
+
+  /* ── voices ── */
+  .voices{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:9px 16px;border-top:1px solid var(--edge);font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--faint);text-transform:uppercase}
+  .voices select{background:var(--sunk);color:var(--dim);border:1px solid var(--edge);border-radius:5px;padding:4px 6px;font-family:var(--sans);font-size:11px;max-width:180px;text-transform:none;letter-spacing:0}
+  .voices .warn{color:var(--warn);text-transform:none;letter-spacing:0;font-family:var(--sans);font-size:11px}
+
+  @media (max-width:640px){
+    .thead{display:none}
+    .row{grid-template-columns:1fr 1fr;gap:8px}
+    .m{grid-column:1/-1;font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+    .mini{display:block;margin-bottom:2px}
+    .w{display:block}
+    .w .flag{margin-top:4px}
+    .tsplit{grid-template-columns:1fr}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+  :focus-visible{outline:2px solid var(--uk);outline-offset:2px}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="masthead">
+    <span class="brand"><b>British</b> ⇄ <i>American</i> · 45 pairs</span>
+    <span class="grow"></span>
+    <nav class="tabs">
+      <button class="on" data-t="look">Look up</button>
+      <button data-t="drill">Practice</button>
+    </nav>
+  </header>
+
+  <section class="panel on" id="look">
+    <div class="searchrow">
+      <input id="q" placeholder="Search a word or a meaning — pants, jumper, waste…" autocomplete="off" spellcheck="false">
+      <button id="clear" title="Clear" hidden>✕</button>
+    </div>
+    <div class="chips" id="chips1"></div>
+    <div class="thead"><span>Meaning</span><span class="b">British</span><span class="a">American</span></div>
+    <div id="rows"></div>
+    <p class="empty" id="empty" hidden></p>
+  </section>
+
+  <section class="panel" id="drill">
+    <div class="setup">
+      <div class="seg" id="dir">
+        <button data-d="uk-us" class="on">British → American</button>
+        <button data-d="us-uk">American → British</button>
+        <button data-d="mix">Mixed</button>
+      </div>
+      <span class="grow"></span>
+      <button class="btn" id="restart">New round</button>
+    </div>
+    <div class="chips" id="chips2"></div>
+    <div id="quizWrap"></div>
+    <div class="score" id="score" hidden></div>
+  </section>
+
+  <div class="voices">
+    <span>Voices</span>
+    <select id="selUK" title="British voice"></select>
+    <select id="selUS" title="American voice"></select>
+    <span class="warn" id="warn" hidden></span>
+  </div>
+</div>
+
+<script>
+/* ── data: four tables, verbatim ── */
+const D = [
+  {c:'Clothing', m:'Legwear',          uk:'trousers',           us:'pants', trap:'pants'},
+  {c:'Clothing', m:'Undergarments',    uk:'pants / underpants', us:'underwear / shorts', trap:'pants'},
+  {c:'Clothing', m:'Warm top',         uk:'jumper',             us:'sweater'},
+  {c:'Clothing', m:'Sleeveless top',   uk:'waistcoat',          us:'vest', trap:'vest'},
+  {c:'Clothing', m:'Undergarment top', uk:'vest',               us:'undershirt / tank top', trap:'vest'},
+  {c:'Clothing', m:'Sport shoes',      uk:'trainers',           us:'sneakers'},
+  {c:'Clothing', m:'Rubber boots',     uk:'wellingtons',        us:'rain boots', okUk:['wellington','wellies','wellington boots']},
+  {c:'Clothing', m:'Rain jacket',      uk:'mackintosh / mac',   us:'raincoat'},
+  {c:'Clothing', m:'Baby wear',        uk:'nappy',              us:'diaper'},
+  {c:'Clothing', m:'Workwear',         uk:'dungarees',          us:'overalls'},
+  {c:'Clothing', m:'Trouser support',  uk:'braces',             us:'suspenders'},
+  {c:'Clothing', m:'Hosiery',          uk:'tights',             us:'pantyhose'},
+
+  {c:'Home', m:'Dwelling',          uk:'flat',           us:'apartment'},
+  {c:'Home', m:'Floor level',       uk:'ground floor',   us:'first floor', trap:'first floor'},
+  {c:'Home', m:'Elevator',          uk:'lift',           us:'elevator'},
+  {c:'Home', m:'Water dispenser',   uk:'tap',            us:'faucet'},
+  {c:'Home', m:'Clothes storage',   uk:'wardrobe',       us:'closet'},
+  {c:'Home', m:'Kitchen appliance', uk:'cooker',         us:'stove'},
+  {c:'Home', m:'Waste container',   uk:'bin',            us:'trash can'},
+  {c:'Home', m:'Waste',             uk:'rubbish',        us:'garbage / trash'},
+  {c:'Home', m:'Window cover',      uk:'curtains',       us:'drapes'},
+  {c:'Home', m:'Seating',           uk:'sofa / settee',  us:'couch'},
+  {c:'Home', m:'Outdoor area',      uk:'garden',         us:'yard'},
+  {c:'Home', m:'Hand light',        uk:'torch',          us:'flashlight'},
+
+  {c:'Education', m:'Govt school',    uk:'state school',  us:'public school', trap:'public school'},
+  {c:'Education', m:'Private school', uk:'public school', us:'private school', trap:'public school'},
+  {c:'Education', m:'Higher ed',      uk:'university',    us:'college'},
+  {c:'Education', m:'School leader',  uk:'head teacher',  us:'principal'},
+  {c:'Education', m:'Learner',        uk:'pupil',         us:'student'},
+  {c:'Education', m:'Score',          uk:'marks',         us:'grades'},
+  {c:'Education', m:'Mathematics',    uk:'maths',         us:'math'},
+  {c:'Education', m:'Pencil remover', uk:'rubber',        us:'eraser'},
+  {c:'Education', m:'Time off',       uk:'holidays',      us:'vacation', okUk:['holiday']},
+  {c:'Education', m:'Schedule',       uk:'timetable',     us:'schedule'},
+
+  {c:'Everyday', m:'Time off work', uk:'holiday',    us:'vacation', okUk:['holidays']},
+  {c:'Everyday', m:'Season',        uk:'autumn',     us:'fall'},
+  {c:'Everyday', m:'Motion picture',uk:'film',       us:'movie'},
+  {c:'Everyday', m:'Movie theatre', uk:'cinema',     us:'movie theater'},
+  {c:'Everyday', m:'Line of people',uk:'queue',      us:'line'},
+  {c:'Everyday', m:'Mail service',  uk:'post',       us:'mail'},
+  {c:'Everyday', m:'Postal code',   uk:'postcode',   us:'zip code'},
+  {c:'Everyday', m:'Cell phone',    uk:'mobile',     us:'cell phone'},
+  {c:'Everyday', m:'Mother',        uk:'mum',        us:'mom'},
+  {c:'Everyday', m:'Retail outlet', uk:'shop',       us:'store'},
+  {c:'Everyday', m:'Pharmacy',      uk:"chemist's",  us:'drugstore / pharmacy', okUk:['chemist','chemists']}
+];
+
+/* the four words that live on both sides with different meanings */
+const TRAPS = {
+  'pants':        {uk:'Pants are underwear — what goes on under the trousers.', us:'Pants are the trousers themselves.'},
+  'vest':         {uk:'A vest is an undershirt, worn next to the skin.',        us:'A vest is a waistcoat, worn over a shirt.'},
+  'public school':{uk:'A public school is private and fee-paying — Eton, Harrow.', us:'A public school is free and funded by the state.'},
+  'first floor':  {uk:'The first floor is one flight up from the ground floor.', us:'The first floor is the ground floor.'}
+};
+
+const $ = id => document.getElementById(id);
+const norm = s => s.toLowerCase().trim().replace(/[^a-z' ]/g,'').replace(/'/g,'').replace(/\s+/g,' ');
+const parts = s => s.split('/').map(x => x.trim());
+const lead = s => parts(s)[0];
+const CATS = [...new Set(D.map(d => d.c))];
+let cat = 'All', query = '';
+
+/* ── voices ── */
+let ukVoice = null, usVoice = null;
+function loadVoices(){
+  const all = speechSynthesis.getVoices().filter(v => /^en/i.test(v.lang));
+  if(!all.length) return;
+  const rank = (v, re) => (re.test(v.lang) ? 0 : 1) + (/google|natural|premium|enhanced/i.test(v.name) ? 0 : .5);
+  fill($('selUK'), [...all].sort((a,b) => rank(a,/GB/i) - rank(b,/GB/i)));
+  fill($('selUS'), [...all].sort((a,b) => rank(a,/US/i) - rank(b,/US/i)));
+  ukVoice = byName($('selUK').value); usVoice = byName($('selUS').value);
+  const miss = [];
+  if(!ukVoice || !/GB/i.test(ukVoice.lang)) miss.push('British');
+  if(!usVoice || !/US/i.test(usVoice.lang)) miss.push('American');
+  $('warn').hidden = !miss.length;
+  if(miss.length) $('warn').textContent = 'No ' + miss.join(' or ') + ' voice on this computer. Add one in your system speech settings, then reload.';
+}
+function fill(sel, list){
+  const keep = sel.value;
+  sel.innerHTML = list.map(v => `<option value="${v.name}">${v.name} · ${v.lang}</option>`).join('');
+  if(list.some(v => v.name === keep)) sel.value = keep;
+}
+const byName = n => speechSynthesis.getVoices().find(v => v.name === n) || null;
+speechSynthesis.onvoiceschanged = loadVoices; loadVoices();
+$('selUK').onchange = () => { ukVoice = byName($('selUK').value); loadVoices(); };
+$('selUS').onchange = () => { usVoice = byName($('selUS').value); loadVoices(); };
+
+function say(text, side, el){
+  try{ speechSynthesis.cancel(); }catch(e){}
+  const u = new SpeechSynthesisUtterance(lead(text));
+  const v = side === 'uk' ? ukVoice : usVoice;
+  if(v){ u.voice = v; u.lang = v.lang; } else u.lang = side === 'uk' ? 'en-GB' : 'en-US';
+  u.rate = .9;
+  if(el){ el.classList.add('speaking'); u.onend = u.onerror = () => el.classList.remove('speaking'); }
+  speechSynthesis.speak(u);
+}
+
+/* ── chips ── */
+function chips(){
+  const html = ['All', ...CATS].map(c => {
+    const n = c === 'All' ? D.length : D.filter(d => d.c === c).length;
+    return `<button data-c="${c}" class="${c === cat ? 'on' : ''}">${c}<span>${n}</span></button>`;
+  }).join('');
+  ['chips1','chips2'].forEach(id => $(id).innerHTML = html);
+}
+['chips1','chips2'].forEach(id => $(id).addEventListener('click', e => {
+  const b = e.target.closest('button'); if(!b) return;
+  cat = b.dataset.c; chips(); list(); newRound();
+}));
+
+/* ── look up ── */
+function match(d){
+  if(cat !== 'All' && d.c !== cat) return false;
+  if(!query) return true;
+  return (d.m + ' ' + d.uk + ' ' + d.us + ' ' + d.c).toLowerCase().includes(query);
+}
+function list(){
+  const hits = D.filter(match);
+  $('rows').innerHTML = hits.map((d,i) => {
+    const flag = t => d.trap ? `<button class="flag" data-trap="${d.trap}" title="Same word, two meanings">!</button>` : '';
+    const trapOn = d.trap && query && norm(d.trap).includes(query.trim());
+    return `<div class="item">
+      <div class="row">
+        <div class="m">${d.m}</div>
+        <div class="w b"><i class="mini">British</i><button class="say" data-s="uk" data-w="${d.uk}">${d.uk}</button>${d.trap && parts(d.uk).some(p => p === d.trap) ? flag() : ''}</div>
+        <div class="w a"><i class="mini">American</i><button class="say" data-s="us" data-w="${d.us}">${d.us}</button>${d.trap && parts(d.us).some(p => p === d.trap) ? flag() : ''}</div>
+      </div>
+      ${d.trap ? trapBox(d.trap, trapOn) : ''}
+    </div>`;
+  }).join('');
+  $('empty').hidden = hits.length > 0;
+  if(!hits.length) $('empty').textContent = query
+    ? `Nothing matches “${query}”. Try a meaning instead — waste, legwear, season.`
+    : 'Nothing here yet.';
+}
+function trapBox(word, open){
+  const t = TRAPS[word];
+  return `<div class="trapbox" data-box="${word}" ${open ? '' : 'hidden'}>
+    <b class="tt">Same word, two meanings</b>
+    <div class="tw">${word}</div>
+    <div class="tsplit">
+      <div class="tside b"><i>In Britain</i><span>${t.uk}</span></div>
+      <div class="tside a"><i>In America</i><span>${t.us}</span></div>
+    </div>
+  </div>`;
+}
+$('rows').addEventListener('click', e => {
+  const s = e.target.closest('.say');
+  if(s) return say(s.dataset.w, s.dataset.s, s);
+  const f = e.target.closest('.flag');
+  if(f){
+    const box = f.closest('.item').querySelector('.trapbox');
+    box.hidden = !box.hidden;
+    f.classList.toggle('on', !box.hidden);
+  }
+});
+$('q').addEventListener('input', e => {
+  query = e.target.value.toLowerCase().trim();
+  $('clear').hidden = !query;
+  list();
+});
+$('clear').onclick = () => { $('q').value = ''; query = ''; $('clear').hidden = true; list(); $('q').focus(); };
+
+/* ── practice ── */
+let dir = 'uk-us', deck = [], pos = 0, right = 0, asked = 0, streak = 0, missed = [], locked = false;
+
+$('dir').addEventListener('click', e => {
+  const b = e.target.closest('button'); if(!b) return;
+  dir = b.dataset.d;
+  [...$('dir').children].forEach(x => x.classList.toggle('on', x === b));
+  newRound();
+});
+$('restart').onclick = () => newRound();
+
+function newRound(){
+  const pool = D.filter(d => cat === 'All' || d.c === cat);
+  deck = pool.map(row => ({row, d: dir === 'mix' ? (Math.random() < .5 ? 'uk-us' : 'us-uk') : dir}))
+             .sort(() => Math.random() - .5);
+  pos = 0; right = 0; asked = 0; streak = 0; missed = []; locked = false;
+  card();
+}
+function card(){
+  $('score').hidden = false;
+  if(pos >= deck.length) return finish();
+  const {row, d} = deck[pos];
+  const from = d === 'uk-us' ? 'uk' : 'us';
+  const to   = d === 'uk-us' ? 'us' : 'uk';
+  const name = s => s === 'uk' ? 'British' : 'American';
+  $('quizWrap').innerHTML = `<div class="quiz">
+    <div class="qmeta"><span>${row.c}</span><span>${pos+1} / ${deck.length}</span></div>
+    <div class="qmean">${row.m}</div>
+    <span class="qtag ${from === 'uk' ? 'b' : 'a'}">${name(from)}</span>
+    <button class="qword ${from === 'uk' ? 'b' : 'a'}" id="qword">${row[from]}</button>
+    <div class="qarrow">↓</div>
+    <span class="qtag ${to === 'uk' ? 'b' : 'a'}">${name(to)}</span>
+    <input id="ans" placeholder="the ${name(to)} word" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <div class="qbtns">
+      <button class="btn main" id="check">Check</button>
+      <button class="btn" id="skip">Show answer</button>
+    </div>
+    <div class="verdict" id="verdict"></div>
+  </div>`;
+  locked = false;
+  $('qword').onclick = () => say(row[from], from, $('qword'));
+  $('check').onclick = check;
+  $('skip').onclick = () => reveal(false);
+  $('ans').onkeydown = e => { if(e.key === 'Enter') locked ? next() : check(); };
+  $('ans').focus();
+  tally();
+}
+function accepted(row, side){
+  const extra = side === 'uk' ? (row.okUk || []) : (row.okUs || []);
+  return [...parts(row[side]), ...extra].map(norm);
+}
+function check(){
+  if(locked) return next();
+  const {row, d} = deck[pos];
+  const from = d === 'uk-us' ? 'uk' : 'us';
+  const to   = d === 'uk-us' ? 'us' : 'uk';
+  const v = norm($('ans').value);
+  if(!v) return $('ans').focus();
+  if(accepted(row, to).includes(v)) return reveal(true);
+  if(accepted(row, from).includes(v)){
+    $('verdict').className = 'verdict nudge';
+    $('verdict').innerHTML = `That's the ${from === 'uk' ? 'British' : 'American'} word. I'm after the ${to === 'uk' ? 'British' : 'American'} one.`;
+    $('ans').select();
+    return;
+  }
+  reveal(false);
+}
+function reveal(ok){
+  const {row, d} = deck[pos];
+  const to = d === 'uk-us' ? 'us' : 'uk';
+  locked = true; asked++;
+  $('ans').classList.add(ok ? 'good' : 'bad');
+  $('ans').blur();
+  $('check').textContent = 'Next';
+  $('skip').disabled = true;
+  if(ok){ right++; streak++; $('verdict').className = 'verdict good'; $('verdict').textContent = 'Correct.'; }
+  else {
+    streak = 0; missed.push(deck[pos]);
+    $('verdict').className = 'verdict bad';
+    $('verdict').innerHTML = `Not quite — it's <b>${row[to]}</b>.`;
+  }
+  say(row[to], to);
+  tally();
+  $('check').focus();
+}
+function next(){ pos++; card(); }
+function tally(){
+  $('score').innerHTML = `<span><b>${right}</b> correct of <b>${asked}</b></span>` +
+    (streak > 1 ? `<span>streak <b>${streak}</b></span>` : '');
+}
+function finish(){
+  $('score').hidden = true;
+  const pct = deck.length ? Math.round(right / deck.length * 100) : 0;
+  $('quizWrap').innerHTML = `<div class="quiz done">
+    <h3>${right} of ${deck.length}</h3>
+    <p>${pct >= 90 ? 'Nearly perfect.' : pct >= 60 ? 'Solid. The ones below need another pass.' : 'Worth another round.'}</p>
+    ${missed.length ? `<div class="missed">${missed.map(({row}) => `<div>
+        <span class="u">${row.uk}</span><em>${row.m}</em><span class="a">${row.us}</span>
+      </div>`).join('')}</div>` : ''}
+    <div class="qbtns">
+      ${missed.length ? '<button class="btn main" id="again">Practise the missed ones</button>' : ''}
+      <button class="btn" id="fresh">New round</button>
+    </div>
+  </div>`;
+  $('fresh').onclick = () => newRound();
+  if(missed.length) $('again').onclick = () => {
+    deck = missed.slice().sort(() => Math.random() - .5);
+    pos = 0; right = 0; asked = 0; streak = 0; missed = []; card();
+  };
+}
+
+/* ── tabs ── */
+document.querySelector('.tabs').addEventListener('click', e => {
+  const b = e.target.closest('button'); if(!b) return;
+  [...e.currentTarget.children].forEach(x => x.classList.toggle('on', x === b));
+  ['look','drill'].forEach(p => $(p).classList.toggle('on', p === b.dataset.t));
+  if(b.dataset.t === 'drill' && !deck.length) newRound();
+  if(b.dataset.t === 'look') $('q').focus();
+});
+
+chips(); list(); newRound();
+</script>
+</body>
+</html>
